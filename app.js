@@ -301,6 +301,7 @@ function generateInvoiceHTML(data, totals) {
         </thead>
         <tbody>
           ${itemRows}
+          <tr class="spacer-row"><td colspan="10"></td></tr>
         </tbody>
       </table>
 
@@ -440,16 +441,16 @@ function generatePrintHTML(data, totals) {
   const itemRows = lineItems.map((item, i) => {
     const amount = calculateLineAmount(item);
     return `<tr>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;">${i + 1}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;">${item.psNo}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:left;">${item.description}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;">${item.hsn}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;">${item.taxPct.toFixed(2)}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;">${item.qty.toFixed(2)}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;">${item.unit}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:right;">${item.rate.toFixed(2)}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;">${item.disPct > 0 ? item.disPct.toFixed(2) : ''}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:right;">${formatCurrency(amount)}</td>
+      <td class="print-cell" style="text-align:center;width:3%;">${i + 1}</td>
+      <td class="print-cell" style="text-align:center;width:5%;">${item.psNo}</td>
+      <td class="print-cell" style="text-align:left;width:40%;">${item.description}</td>
+      <td class="print-cell" style="text-align:center;width:7%;">${item.hsn}</td>
+      <td class="print-cell" style="text-align:center;width:5%;">${item.taxPct.toFixed(2)}</td>
+      <td class="print-cell" style="text-align:center;width:8%;">${item.qty.toFixed(2)}</td>
+      <td class="print-cell" style="text-align:center;width:5%;">${item.unit}</td>
+      <td class="print-cell" style="text-align:right;width:8%;">${item.rate.toFixed(2)}</td>
+      <td class="print-cell" style="text-align:center;width:5%;">${item.disPct > 0 ? item.disPct.toFixed(2) : ''}</td>
+      <td class="print-cell" style="text-align:right;width:14%;">${formatCurrency(amount)}</td>
     </tr>`;
   }).join('');
 
@@ -457,47 +458,53 @@ function generatePrintHTML(data, totals) {
     `<div style="display:flex;justify-content:flex-end;gap:20px;padding:1px 6px;font-size:10px;"><span>${t.label} on Amt : ${formatCurrency(t.on)}</span><span>${formatCurrency(t.amount)}</span></div>`
   ).join('');
 
+  const colHeadersCSS = 'border:1px solid #000;padding:3px;background:#f5f5f5;font-weight:bold;font-size:9px;';
+
   return `
     <table class="page-table" style="width:100%;border-collapse:collapse;font-family:'Times New Roman',serif;font-size:10px;">
-      <thead><tr><td>${headerHTML}
-        <table style="width:100%;border-collapse:collapse;font-size:9px;">
-          <tr>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">Sn.</th>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">P.S.No</th>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">Description</th>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">HSN/SAC</th>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">Tax%</th>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">Quantity</th>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">Units</th>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">Rate</th>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">Dis%</th>
-            <th style="border:1px solid #000;padding:3px;background:#f5f5f5;">Amount</th>
-          </tr>
-        </table>
-      </td></tr></thead>
-      <tfoot><tr><td>
-        <div style="font-size:10px;font-weight:bold;padding:2px 6px;">MSME No. : ${seller.msme}</div>
-        <div style="border:1px solid #000;padding:2px 6px;display:flex;justify-content:space-between;font-size:11px;">
-          <span><strong>Sub Total</strong></span><span><strong>${formatCurrency(totals.subTotal)}</strong></span>
-        </div>
-        ${taxRows}
-        <div style="border:1px solid #000;border-top:none;padding:3px 6px;display:flex;justify-content:space-between;font-size:12px;font-weight:bold;">
-          <span>Grand Total</span><span>${formatCurrency(totals.grandTotal)}</span>
-        </div>
-        <div style="border:1px solid #000;border-top:none;padding:2px 6px;font-size:10px;font-style:italic;">
-          Amount In Words : ${numberToWords(totals.grandTotal)}
-        </div>
-        ${footerHTML}
-        <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:7px;color:#333;">
-          I / we certify that our registration certificate under the GST Act, 2017 is in force on the date on which the supply of goods specified in this Tax Invoice is made by me/us & the transaction of supply covered by this Tax Invoice has been effected by me/us & it shall be accounted for in the turnover of supplies while filing of returns & the due tax if any payable on the supplies has been paid or shall be paid & further certified that the particulars given above are true and correct & the amount indicated represents the prices actually charged and that there is no flow additional consideration directly or indirectly from the buyer. Interest @ 18% p.a. charged on all outstanding more than one month after invoice has been rendered.
-        </div>
-      </td></tr></tfoot>
-      <tbody><tr><td>
-        <table style="width:100%;border-collapse:collapse;font-size:10px;">
-          ${itemRows}
-        </table>
-      </td></tr></tbody>
+      <thead>
+        <tr><td colspan="10" style="padding:0;border:none;">${headerHTML}</td></tr>
+        <tr>
+          <th style="${colHeadersCSS}">Sn.</th>
+          <th style="${colHeadersCSS}">P.S.No</th>
+          <th style="${colHeadersCSS}">Description</th>
+          <th style="${colHeadersCSS}">HSN/SAC</th>
+          <th style="${colHeadersCSS}">Tax%</th>
+          <th style="${colHeadersCSS}">Quantity</th>
+          <th style="${colHeadersCSS}">Units</th>
+          <th style="${colHeadersCSS}">Rate</th>
+          <th style="${colHeadersCSS}">Dis%</th>
+          <th style="${colHeadersCSS}">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${itemRows}
+      </tbody>
     </table>
+
+    <!-- Totals and footer appear only once at natural end -->
+    <div style="font-family:'Times New Roman',serif;font-size:10px;">
+      <div style="font-size:10px;font-weight:bold;padding:3px 6px;border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;">MSME No. : ${seller.msme}</div>
+      <div style="border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;padding:3px 6px;display:flex;justify-content:space-between;font-size:11px;font-weight:bold;">
+        <span>Sub Total</span><span>${formatCurrency(totals.subTotal)}</span>
+      </div>
+      <div style="border-left:1px solid #000;border-right:1px solid #000;">
+        ${taxRows}
+      </div>
+      <div style="border:1px solid #000;border-top:2px solid #000;padding:4px 6px;display:flex;justify-content:space-between;font-size:12px;font-weight:bold;">
+        <span>Grand Total</span><span>${formatCurrency(totals.grandTotal)}</span>
+      </div>
+      <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:10px;">
+        Amount In Words : ${numberToWords(totals.grandTotal)}
+      </div>
+      <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:9px;">
+        Issued On : ${new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'})} ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}
+      </div>
+      ${footerHTML}
+      <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:7px;color:#333;">
+        I / we certify that our registration certificate under the GST Act, 2017 is in force on the date on which the supply of goods specified in this Tax Invoice is made by me/us & the transaction of supply covered by this Tax Invoice has been effected by me/us & it shall be accounted for in the turnover of supplies while filing of returns & the due tax if any payable on the supplies has been paid or shall be paid & further certified that the particulars given above are true and correct & the amount indicated represents the prices actually charged and that there is no flow additional consideration directly or indirectly from the buyer. Interest @ 18% p.a. charged on all outstanding more than one month after invoice has been rendered.
+      </div>
+    </div>
   `;
 }
 
@@ -509,3 +516,40 @@ function printInvoice() {
 
   setTimeout(() => window.print(), 200);
 }
+
+// ===== RESIZABLE PANEL =====
+(function() {
+  document.addEventListener('DOMContentLoaded', () => {
+    const handle = document.getElementById('resizeHandle');
+    const formPanel = document.getElementById('formPanel');
+    if (!handle || !formPanel) return;
+
+    let isResizing = false;
+
+    handle.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      handle.classList.add('active');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      const containerLeft = formPanel.parentElement.getBoundingClientRect().left;
+      const newWidth = e.clientX - containerLeft;
+      const minW = 300;
+      const maxW = window.innerWidth * 0.8;
+      formPanel.style.width = Math.min(Math.max(newWidth, minW), maxW) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isResizing) {
+        isResizing = false;
+        handle.classList.remove('active');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+    });
+  });
+})();
