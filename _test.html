@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><link rel="stylesheet" href="style.css"></head>
+<body>
+<div style="display:none;">
+  <input id="sellerName" value="ASPA AI LABS">
+  <textarea id="sellerAddress">5, PLOT NO 27, SHAH COLONY, TALEGAON DABHADE, PUNE 410507</textarea>
+  <input id="sellerPhone" value="8308810784"><input id="sellerEmail" value="aspaailabs@gmail.com">
+  <input id="sellerWebsite" value="aspaailabs.com"><input id="sellerGstin" value="27BGYPS3448H1ZK">
+  <input id="sellerPan" value="BGYPS3448H"><input id="sellerState" value="Maharashtra">
+  <input id="sellerStateCode" value="27"><input id="sellerMsme" value="">
+  <input id="ackNo" value="112233"><input id="ackDate" value="03/05/2026"><input id="irnNo" value="abc123def456">
+  <input id="invoiceNo" value="ASPA/2026/001"><input id="invoiceDate" value="2026-05-03">
+  <input id="poNo" value="PO-1"><input id="poDate" value="2026-05-01"><input id="challanNo" value="CH-1">
+  <input id="payTerms" value="30 Days"><input id="dueDate" value="2026-06-03">
+  <input id="delivery" value="Pune"><input id="kindAttn" value="Mr. Buyer">
+  <input id="buyerName" value="TEST BUYER PVT LTD"><textarea id="buyerAddress">Pune 411001</textarea>
+  <input id="buyerGstin" value="27ABCDE1234F1Z5"><input id="buyerPan" value="ABCDE1234F">
+  <input id="buyerState" value="Maharashtra"><input id="buyerStateCode" value="27">
+  <input id="buyerRegType" value="Registered"><input id="bankName" value="PNB"><input id="bankAccName" value="Aspa">
+  <input id="bankBranch" value="Talegaon"><input id="bankAccNo" value="6515"><input id="bankIfsc" value="PUNB">
+  <select id="gstType"><option value="intra" selected>intra</option></select>
+</div>
+<div class="preview-panel" style="background:#e8e8e8;padding:20px;">
+  <div class="invoice-wrapper" id="invoicePreview"></div>
+</div>
+<script src="https://unpkg.com/pagedjs@0.4.3/dist/paged.js"></script>
+<script src="app.js"></script>
+<script>
+  lineItems = [];
+  itemIdCounter = 0;
+  for (let i = 1; i <= 25; i++) {
+    itemIdCounter++;
+    lineItems.push({id:itemIdCounter, psNo:String(i), description:`Test product ${i} - description`, hsn:'85043200', taxPct:18, qty:1, unit:'EA', rate:1000*i, disPct:0});
+  }
+  setTimeout(() => updatePreview(), 100);
+</script>
+</body></html>
