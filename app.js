@@ -203,164 +203,200 @@ function getFormData() {
   };
 }
 
-function generateInvoiceHTML(data, totals) {
-  const { seller, irn, invoice, buyer, bank } = data;
+// ===== PAGINATED PREVIEW (manual paginator, identical to print) =====
+//
+// Page sizing in CSS pixels at 96 DPI:
+//   A4: 210mm x 297mm = 794 x 1123 px
+//   Body padding: 6mm all sides ≈ 23 px
+//   Available content height per page: ~1077 px
+//   Header takes ~270 px on every page (company info + buyer + col headers)
+//   Footer block (page number) ~30 px
+//   Totals + bank + signatures + disclaimer ~280 px (only on last page)
+//
+// We measure header/footer/items dynamically using a hidden measurement
+// container so pagination is accurate even when the description text wraps.
 
-  const itemRows = lineItems.map((item, i) => {
-    const amount = calculateLineAmount(item);
-    return `<tr>
-      <td>${i + 1}</td>
-      <td>${item.psNo}</td>
-      <td class="desc">${item.description}</td>
-      <td>${item.hsn}</td>
-      <td>${item.taxPct.toFixed(2)}</td>
-      <td>${item.qty.toFixed(2)}</td>
-      <td>${item.unit}</td>
-      <td>${item.rate.toFixed(2)}</td>
-      <td>${item.disPct > 0 ? item.disPct.toFixed(2) : ''}</td>
-      <td class="amount">${formatCurrency(amount)}</td>
-    </tr>`;
-  }).join('');
+const PAGE_HEIGHT_PX = 1123;
+const PAGE_PADDING_PX = 23;
+const PAGE_BOTTOM_RESERVE_PX = 26;
 
-  const taxRows = totals.taxes.map(t =>
-    `<div class="row tax"><span>${t.label} on Amt : ${formatCurrency(t.on)}</span><span>${formatCurrency(t.amount)}</span></div>`
-  ).join('');
-
-  return `
-    <div class="inv-header-top">
-      <span>Office Copy</span>
-      <span>(U/s 31 of CGST Act & SGST Act R.W. Sec. 20 of IGST Act)</span>
-      <span class="inv-title">GST Tax Invoice</span>
-    </div>
-
-    <div class="inv-outer">
-      <div class="inv-top-block">
-        <div class="inv-top-left">
-          <div class="inv-irn-left">
-            <div><strong>Ack. No.</strong> &nbsp;&nbsp; ${irn.ackNo}</div>
-            <div><strong>Ack. Date.</strong> &nbsp; ${irn.ackDate}</div>
-            <div><strong>IRN No.</strong> &nbsp;&nbsp;&nbsp; <span class="irn-text">${irn.irnNo}</span></div>
-          </div>
-          <div class="inv-company-inner">
-            <h2>${seller.name}</h2>
-            <p>${seller.address}</p>
-            <p>Mob: ${seller.phone}${seller.email ? ' | Email: ' + seller.email : ''}</p>
-            ${seller.website ? `<p>Website: ${seller.website}</p>` : ''}
-          </div>
-        </div>
-        <div class="inv-top-right">
-          ${qrCodeDataUrl
-            ? `<img src="${qrCodeDataUrl}" class="qr-image" alt="QR Code">`
-            : `<div class="qr-placeholder">QR</div>`}
-        </div>
-      </div>
-
-      <div class="inv-details-grid">
-        <div class="left">
-          <div class="row gstin-row"><span>GSTIN : ${seller.gstin}</span><span>W.E.F. 04/03/2026</span></div>
-          <div class="row"><span>Invoice No. : ${invoice.no}</span><span>Date : ${formatDate(invoice.date)}</span></div>
-          <div class="row"><span>P.O. No. : ${invoice.poNo}</span><span>Date : ${formatDate(invoice.poDate)}</span></div>
-          <div class="row"><span>Delivery : ${invoice.delivery}</span></div>
-        </div>
-        <div class="right">
-          <div class="row gstin-row"><span>State : ${seller.stateCode} ${seller.state}</span><span>PAN No. ${seller.pan}</span></div>
-          <div class="row"><span>Challan No. : ${invoice.challanNo}</span></div>
-          <div class="row"><span>Pay. Terms : ${invoice.payTerms}</span><span>Due On : ${formatDate(invoice.dueDate)}</span></div>
-          <div class="row"><span>Kind Attn : ${invoice.kindAttn}</span></div>
-        </div>
-      </div>
-
-      <div class="inv-buyer">
-        <div class="left">
-          <h4>Buyer & Consignee:</h4>
-          <p><strong>${buyer.name}</strong></p>
-          <p>${buyer.address}</p>
-        </div>
-        <div class="right">
-          <div class="row"><span>GST. No. :</span><span>${buyer.gstin}</span></div>
-          <div class="row"><span>PAN No. :</span><span>${buyer.pan}</span></div>
-          <div class="row"><span>Reg.Type :</span><span>${buyer.regType}</span></div>
-          <div class="row"><span>State Code :</span><span>${buyer.stateCode} ${buyer.state}</span></div>
-        </div>
-      </div>
-
-      <table class="inv-table">
-        <thead>
-          <tr>
-            <th>Sn.</th>
-            <th>P.S.No</th>
-            <th>Description</th>
-            <th>HSN/SAC</th>
-            <th>Tax%</th>
-            <th>Quantity</th>
-            <th>Units</th>
-            <th>Rate</th>
-            <th>Dis%</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemRows}
-          <tr class="spacer-row"><td colspan="10"></td></tr>
-        </tbody>
-      </table>
-
-      ${seller.msme ? `<div class="inv-msme">MSME No. : ${seller.msme}</div>` : ''}
-
-      <div class="inv-totals">
-        <div class="row sub"><span>Sub Total</span><span>${formatCurrency(totals.subTotal)}</span></div>
-        ${taxRows}
-        <div class="row grand"><span>Grand Total</span><span>${formatCurrency(totals.grandTotal)}</span></div>
-      </div>
-
-      <div class="inv-amount-words">
-        Amount In Words : ${numberToWords(totals.grandTotal)}
-      </div>
-
-      <div class="inv-issued">
-        Issued On : ${new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'})} ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}
-      </div>
-
-      <div class="inv-footer">
-        <div class="left">
-          <p><strong>Our Bank Details :</strong></p>
-          <p>Bank Name : ${bank.name}</p>
-          <p>Account Name : ${bank.accName}</p>
-          <p>Branch : ${bank.branch}</p>
-          <p>A/c No : ${bank.accNo}</p>
-          <p>IFSC/Neft Code : ${bank.ifsc}</p>
-        </div>
-        <div class="right">
-          <p>For ${seller.name}</p>
-        </div>
-      </div>
-
-      <div class="inv-signatures">
-        <div>Customer Receive Sign</div>
-        <div>Prepared by</div>
-        <div>Authorised Signatory</div>
-      </div>
-
-      <div class="inv-disclaimer">
-        I / we certify that our registration certificate under the GST Act, 2017 is in force on the date on which the supply of goods specified in this Tax Invoice is made by me/us & the transaction of supply covered by this Tax Invoice has been effected by me/us & it shall be accounted for in the turnover of supplies while filing of returns & the due tax if any payable on the supplies has been paid or shall be paid & further certified that the particulars given above are true and correct & the amount indicated represents the prices actually charged and that there is no flow additional consideration directly or indirectly from the buyer. Interest @ 18% p.a. charged on all outstanding more than one month after invoice has been rendered.
-      </div>
-    </div>
-  `;
-}
+let previewRenderTimer = null;
 
 function updatePreview() {
-  const data = getFormData();
-  const totals = calculateTotals();
-  const html = generateInvoiceHTML(data, totals);
-  document.getElementById('invoicePreview').innerHTML = html;
+  if (previewRenderTimer) clearTimeout(previewRenderTimer);
+  previewRenderTimer = setTimeout(renderPaginatedPreview, 150);
 }
 
-// ===== PRINT =====
-function generatePrintHTML(data, totals) {
-  const { seller, irn, invoice, buyer, bank } = data;
+function renderPaginatedPreview() {
+  const data = getFormData();
+  const totals = calculateTotals();
+  const target = document.getElementById('invoicePreview');
+  target.innerHTML = renderPaginatedHTML(data, totals);
+}
 
-  const headerHTML = `
-    <div style="font-family:'Times New Roman',serif;font-size:10px;padding:4px 0;">
+function renderPaginatedHTML(data, totals) {
+  const headerHTML = buildHeaderHTML(data);
+  const colHeadersHTML = buildColHeadersHTML();
+  const itemRowsHTML = lineItems.map((item, i) => buildItemRowHTML(item, i));
+  const totalsFooterHTML = buildTotalsFooterHTML(data, totals);
+
+  // Measure heights using a hidden container
+  const measureWrap = document.createElement('div');
+  measureWrap.className = 'measure-wrap';
+  measureWrap.style.cssText = `
+    position: absolute; visibility: hidden; pointer-events: none;
+    top: -99999px; left: 0; width: 794px;
+    font-family: 'Times New Roman', Times, serif; font-size: 10px;
+  `;
+  document.body.appendChild(measureWrap);
+
+  measureWrap.innerHTML = `<div class="page-padding-mirror" style="padding:${PAGE_PADDING_PX}px;">
+    <div data-meas="header">${headerHTML}${colHeadersWrapper(colHeadersHTML)}</div>
+  </div>`;
+  const headerHeight = measureWrap.querySelector('[data-meas="header"]').offsetHeight;
+
+  measureWrap.innerHTML = `<div style="padding:${PAGE_PADDING_PX}px;">
+    <div data-meas="footer">${totalsFooterHTML}</div>
+  </div>`;
+  const footerHeight = measureWrap.querySelector('[data-meas="footer"]').offsetHeight;
+
+  // Measure each item row by rendering individual full-table fragments
+  const measureTableHTML = (rowsHTML) => `
+    <div style="padding:${PAGE_PADDING_PX}px;">
+      <table style="width:100%;border-collapse:collapse;font-family:'Times New Roman',serif;font-size:10px;">
+        <colgroup>
+          <col style="width:3%"><col style="width:5%"><col style="width:40%"><col style="width:7%"><col style="width:5%">
+          <col style="width:8%"><col style="width:5%"><col style="width:8%"><col style="width:5%"><col style="width:14%">
+        </colgroup>
+        <tbody data-meas="items">${rowsHTML}</tbody>
+      </table>
+    </div>`;
+
+  // Measure cumulative item heights to know where to break
+  measureWrap.innerHTML = measureTableHTML(itemRowsHTML.join(''));
+  const itemTbody = measureWrap.querySelector('[data-meas="items"]');
+  const itemHeights = Array.from(itemTbody.children).map(tr => tr.offsetHeight);
+
+  document.body.removeChild(measureWrap);
+
+  // Available room for items per page, when header is the only thing reserved
+  const availForItems = PAGE_HEIGHT_PX - headerHeight - PAGE_BOTTOM_RESERVE_PX;
+  // Available room for items on last page (also has totals/footer below items)
+  const availForItemsLast = PAGE_HEIGHT_PX - headerHeight - footerHeight - PAGE_BOTTOM_RESERVE_PX;
+
+  // Build pages: greedy fit. After all items placed, see if footer fits with last items.
+  const pages = [];
+  let cur = { items: [], height: 0 };
+  for (let i = 0; i < itemRowsHTML.length; i++) {
+    const h = itemHeights[i];
+    if (cur.items.length > 0 && cur.height + h > availForItems) {
+      pages.push(cur);
+      cur = { items: [], height: 0 };
+    }
+    cur.items.push(itemRowsHTML[i]);
+    cur.height += h;
+  }
+  pages.push(cur);
+
+  // Decide whether totals/footer fit on the last page or need a new page
+  const lastPage = pages[pages.length - 1];
+  const lastHasRoom = lastPage.height + footerHeight <= availForItems;
+  let putFooterOnNewPage = !lastHasRoom;
+
+  // If items would overflow availForItemsLast on the last items+footer page, push footer to new page
+  if (!putFooterOnNewPage && lastPage.height > availForItemsLast) {
+    putFooterOnNewPage = true;
+  }
+
+  if (putFooterOnNewPage) {
+    pages.push({ items: [], height: 0, footerOnly: true });
+  }
+
+  const totalPages = pages.length;
+  return pages.map((pg, idx) => {
+    const isLast = idx === totalPages - 1;
+    return buildPageHTML({
+      headerHTML,
+      colHeadersHTML,
+      itemsHTML: pg.items.join(''),
+      footerHTML: isLast ? totalsFooterHTML : '',
+      pageNum: idx + 1,
+      totalPages,
+    });
+  }).join('');
+}
+
+function colHeadersWrapper(colHeadersHTML) {
+  return `<table style="width:100%;border-collapse:collapse;font-family:'Times New Roman',serif;font-size:10px;">
+    <colgroup>
+      <col style="width:3%"><col style="width:5%"><col style="width:40%"><col style="width:7%"><col style="width:5%">
+      <col style="width:8%"><col style="width:5%"><col style="width:8%"><col style="width:5%"><col style="width:14%">
+    </colgroup>
+    ${colHeadersHTML}
+  </table>`;
+}
+
+function buildPageHTML({ headerHTML, colHeadersHTML, itemsHTML, footerHTML, pageNum, totalPages }) {
+  return `<section class="invoice-page">
+    <div class="invoice-page-inner">
+      <div class="invoice-content">
+        ${headerHTML}
+        <table style="width:100%;border-collapse:collapse;font-family:'Times New Roman',serif;font-size:10px;">
+          <colgroup>
+            <col style="width:3%"><col style="width:5%"><col style="width:40%"><col style="width:7%"><col style="width:5%">
+            <col style="width:8%"><col style="width:5%"><col style="width:8%"><col style="width:5%"><col style="width:14%">
+          </colgroup>
+          ${colHeadersHTML}
+          <tbody>${itemsHTML}</tbody>
+        </table>
+        ${footerHTML}
+      </div>
+      <div class="invoice-page-number">Page ${pageNum} of ${totalPages}</div>
+    </div>
+  </section>`;
+}
+
+function buildColHeadersHTML() {
+  const c = 'border:1px solid #000;padding:3px;background:#f5f5f5;font-weight:bold;font-size:9px;';
+  return `<thead><tr>
+    <th style="${c}">Sn.</th>
+    <th style="${c}">P.S.No</th>
+    <th style="${c}">Description</th>
+    <th style="${c}">HSN/SAC</th>
+    <th style="${c}">Tax%</th>
+    <th style="${c}">Quantity</th>
+    <th style="${c}">Units</th>
+    <th style="${c}">Rate</th>
+    <th style="${c}">Dis%</th>
+    <th style="${c}">Amount</th>
+  </tr></thead>`;
+}
+
+function buildItemRowHTML(item, i) {
+  const amount = calculateLineAmount(item);
+  return `<tr>
+    <td class="print-cell" style="text-align:center;">${i + 1}</td>
+    <td class="print-cell" style="text-align:center;">${escapeHtml(item.psNo)}</td>
+    <td class="print-cell" style="text-align:left;">${escapeHtml(item.description)}</td>
+    <td class="print-cell" style="text-align:center;">${escapeHtml(item.hsn)}</td>
+    <td class="print-cell" style="text-align:center;">${item.taxPct.toFixed(2)}</td>
+    <td class="print-cell" style="text-align:center;">${item.qty.toFixed(2)}</td>
+    <td class="print-cell" style="text-align:center;">${escapeHtml(item.unit)}</td>
+    <td class="print-cell" style="text-align:right;">${item.rate.toFixed(2)}</td>
+    <td class="print-cell" style="text-align:center;">${item.disPct > 0 ? item.disPct.toFixed(2) : ''}</td>
+    <td class="print-cell" style="text-align:right;">${formatCurrency(amount)}</td>
+  </tr>`;
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ===== HEADER / FOOTER BUILDERS (used by paginator) =====
+function buildHeaderHTML(data) {
+  const { seller, irn, invoice, buyer } = data;
+  return `
+    <div style="font-family:'Times New Roman',serif;font-size:10px;padding:0 0 4px 0;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;font-size:9px;">
         <span>Office Copy</span>
         <span>(U/s 31 of CGST Act & SGST Act R.W. Sec. 20 of IGST Act)</span>
@@ -369,14 +405,14 @@ function generatePrintHTML(data, totals) {
       <div style="display:grid;grid-template-columns:1fr auto;border:1px solid #000;">
         <div>
           <div style="padding:4px 6px;font-size:9px;border-bottom:1px solid #000;">
-            <div><strong>Ack. No.</strong> ${irn.ackNo}</div>
-            <div><strong>Ack. Date.</strong> ${irn.ackDate}</div>
-            <div><strong>IRN No.</strong> <span style="font-size:7px;word-break:break-all;">${irn.irnNo}</span></div>
+            <div><strong>Ack. No.</strong> ${escapeHtml(irn.ackNo)}</div>
+            <div><strong>Ack. Date.</strong> ${escapeHtml(irn.ackDate)}</div>
+            <div><strong>IRN No.</strong> <span style="font-size:7px;word-break:break-all;">${escapeHtml(irn.irnNo)}</span></div>
           </div>
           <div style="text-align:center;padding:6px;">
-            <div style="font-size:18px;font-weight:bold;letter-spacing:1px;">${seller.name}</div>
-            <div style="font-size:9px;">${seller.address}</div>
-            <div style="font-size:9px;">Mob: ${seller.phone}${seller.email ? ' | Email: ' + seller.email : ''}${seller.website ? ' | Website: ' + seller.website : ''}</div>
+            <div style="font-size:18px;font-weight:bold;letter-spacing:1px;">${escapeHtml(seller.name)}</div>
+            <div style="font-size:9px;">${escapeHtml(seller.address)}</div>
+            <div style="font-size:9px;">Mob: ${escapeHtml(seller.phone)}${seller.email ? ' | Email: ' + escapeHtml(seller.email) : ''}${seller.website ? ' | Website: ' + escapeHtml(seller.website) : ''}</div>
           </div>
         </div>
         <div style="border-left:1px solid #000;display:flex;align-items:center;justify-content:center;padding:6px;">
@@ -387,47 +423,54 @@ function generatePrintHTML(data, totals) {
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:9px;">
         <div style="padding:3px 6px;">
-          <div>GSTIN : ${seller.gstin} &nbsp; W.E.F. 04/03/2026</div>
-          <div>Invoice No. : ${invoice.no} &nbsp;&nbsp; Date : ${formatDate(invoice.date)}</div>
-          <div>P.O. No. : ${invoice.poNo} &nbsp;&nbsp; Date : ${formatDate(invoice.poDate)}</div>
-          <div>Delivery : ${invoice.delivery}</div>
+          <div>GSTIN : ${escapeHtml(seller.gstin)} &nbsp; W.E.F. 04/03/2026</div>
+          <div>Invoice No. : ${escapeHtml(invoice.no)} &nbsp;&nbsp; Date : ${formatDate(invoice.date)}</div>
+          <div>P.O. No. : ${escapeHtml(invoice.poNo)} &nbsp;&nbsp; Date : ${formatDate(invoice.poDate)}</div>
+          <div>Delivery : ${escapeHtml(invoice.delivery)}</div>
         </div>
         <div style="padding:3px 6px;border-left:1px solid #000;">
-          <div>State : ${seller.stateCode} ${seller.state} &nbsp; PAN No. ${seller.pan}</div>
-          <div>Challan No. : ${invoice.challanNo}</div>
-          <div>Pay. Terms : ${invoice.payTerms} &nbsp; Due On : ${formatDate(invoice.dueDate)}</div>
-          <div>Kind Attn : ${invoice.kindAttn}</div>
+          <div>State : ${escapeHtml(seller.stateCode)} ${escapeHtml(seller.state)} &nbsp; PAN No. ${escapeHtml(seller.pan)}</div>
+          <div>Challan No. : ${escapeHtml(invoice.challanNo)}</div>
+          <div>Pay. Terms : ${escapeHtml(invoice.payTerms)} &nbsp; Due On : ${formatDate(invoice.dueDate)}</div>
+          <div>Kind Attn : ${escapeHtml(invoice.kindAttn)}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:9px;">
         <div style="padding:3px 6px;">
           <div style="text-decoration:underline;font-weight:bold;">Buyer & Consignee:</div>
-          <div><strong>${buyer.name}</strong></div>
-          <div>${buyer.address}</div>
+          <div><strong>${escapeHtml(buyer.name)}</strong></div>
+          <div>${escapeHtml(buyer.address)}</div>
         </div>
         <div style="padding:3px 6px;border-left:1px solid #000;">
-          <div>GST. No. : ${buyer.gstin}</div>
-          <div>PAN No. : ${buyer.pan}</div>
-          <div>Reg.Type : ${buyer.regType}</div>
-          <div>State Code : ${buyer.stateCode} ${buyer.state}</div>
+          <div>GST. No. : ${escapeHtml(buyer.gstin)}</div>
+          <div>PAN No. : ${escapeHtml(buyer.pan)}</div>
+          <div>Reg.Type : ${escapeHtml(buyer.regType)}</div>
+          <div>State Code : ${escapeHtml(buyer.stateCode)} ${escapeHtml(buyer.state)}</div>
         </div>
       </div>
     </div>
   `;
+}
 
-  const footerHTML = `
-    <div style="font-family:'Times New Roman',serif;font-size:9px;border-top:1px solid #000;padding-top:4px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;">
+function buildTotalsFooterHTML(data, totals) {
+  const { seller, bank } = data;
+  const taxRows = totals.taxes.map(t =>
+    `<div style="display:flex;justify-content:flex-end;gap:20px;padding:1px 6px;font-size:10px;"><span>${escapeHtml(t.label)} on Amt : ${formatCurrency(t.on)}</span><span>${formatCurrency(t.amount)}</span></div>`
+  ).join('');
+
+  const bankSignaturesHTML = `
+    <div style="font-family:'Times New Roman',serif;font-size:9px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;">
         <div style="padding:4px 6px;border-right:1px solid #000;">
-          <p><strong>Our Bank Details :</strong></p>
-          <p>Bank Name : ${bank.name}</p>
-          <p>Account Name : ${bank.accName}</p>
-          <p>Branch : ${bank.branch}</p>
-          <p>A/c No : ${bank.accNo}</p>
-          <p>IFSC/Neft Code : ${bank.ifsc}</p>
+          <div><strong>Our Bank Details :</strong></div>
+          <div>Bank Name : ${escapeHtml(bank.name)}</div>
+          <div>Account Name : ${escapeHtml(bank.accName)}</div>
+          <div>Branch : ${escapeHtml(bank.branch)}</div>
+          <div>A/c No : ${escapeHtml(bank.accNo)}</div>
+          <div>IFSC/Neft Code : ${escapeHtml(bank.ifsc)}</div>
         </div>
         <div style="padding:4px 6px;text-align:right;">
-          <p><strong>For ${seller.name}</strong></p>
+          <div><strong>For ${escapeHtml(seller.name)}</strong></div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #000;border-top:none;text-align:center;">
@@ -438,69 +481,25 @@ function generatePrintHTML(data, totals) {
     </div>
   `;
 
-  const itemRows = lineItems.map((item, i) => {
-    const amount = calculateLineAmount(item);
-    return `<tr>
-      <td class="print-cell" style="text-align:center;width:3%;">${i + 1}</td>
-      <td class="print-cell" style="text-align:center;width:5%;">${item.psNo}</td>
-      <td class="print-cell" style="text-align:left;width:40%;">${item.description}</td>
-      <td class="print-cell" style="text-align:center;width:7%;">${item.hsn}</td>
-      <td class="print-cell" style="text-align:center;width:5%;">${item.taxPct.toFixed(2)}</td>
-      <td class="print-cell" style="text-align:center;width:8%;">${item.qty.toFixed(2)}</td>
-      <td class="print-cell" style="text-align:center;width:5%;">${item.unit}</td>
-      <td class="print-cell" style="text-align:right;width:8%;">${item.rate.toFixed(2)}</td>
-      <td class="print-cell" style="text-align:center;width:5%;">${item.disPct > 0 ? item.disPct.toFixed(2) : ''}</td>
-      <td class="print-cell" style="text-align:right;width:14%;">${formatCurrency(amount)}</td>
-    </tr>`;
-  }).join('');
-
-  const taxRows = totals.taxes.map(t =>
-    `<div style="display:flex;justify-content:flex-end;gap:20px;padding:1px 6px;font-size:10px;"><span>${t.label} on Amt : ${formatCurrency(t.on)}</span><span>${formatCurrency(t.amount)}</span></div>`
-  ).join('');
-
-  const colHeadersCSS = 'border:1px solid #000;padding:3px;background:#f5f5f5;font-weight:bold;font-size:9px;';
-
   return `
-    <table class="page-table" style="width:100%;border-collapse:collapse;font-family:'Times New Roman',serif;font-size:10px;">
-      <thead>
-        <tr><td colspan="10" style="padding:0;border:none;">${headerHTML}</td></tr>
-        <tr>
-          <th style="${colHeadersCSS}">Sn.</th>
-          <th style="${colHeadersCSS}">P.S.No</th>
-          <th style="${colHeadersCSS}">Description</th>
-          <th style="${colHeadersCSS}">HSN/SAC</th>
-          <th style="${colHeadersCSS}">Tax%</th>
-          <th style="${colHeadersCSS}">Quantity</th>
-          <th style="${colHeadersCSS}">Units</th>
-          <th style="${colHeadersCSS}">Rate</th>
-          <th style="${colHeadersCSS}">Dis%</th>
-          <th style="${colHeadersCSS}">Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${itemRows}
-      </tbody>
-    </table>
-
-    <!-- Totals and footer appear only once at natural end -->
     <div style="font-family:'Times New Roman',serif;font-size:10px;">
-      <div style="font-size:10px;font-weight:bold;padding:3px 6px;border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;">MSME No. : ${seller.msme}</div>
-      <div style="border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;padding:3px 6px;display:flex;justify-content:space-between;font-size:11px;font-weight:bold;">
+      <div style="font-size:10px;font-weight:bold;padding:3px 6px;border:1px solid #000;border-top:none;">MSME No. : ${escapeHtml(seller.msme)}</div>
+      <div style="border:1px solid #000;border-top:none;padding:3px 6px;display:flex;justify-content:space-between;font-size:11px;font-weight:bold;">
         <span>Sub Total</span><span>${formatCurrency(totals.subTotal)}</span>
       </div>
-      <div style="border-left:1px solid #000;border-right:1px solid #000;">
+      <div style="border:1px solid #000;border-top:none;border-bottom:none;">
         ${taxRows}
       </div>
       <div style="border:1px solid #000;border-top:2px solid #000;padding:4px 6px;display:flex;justify-content:space-between;font-size:12px;font-weight:bold;">
         <span>Grand Total</span><span>${formatCurrency(totals.grandTotal)}</span>
       </div>
       <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:10px;">
-        Amount In Words : ${numberToWords(totals.grandTotal)}
+        Amount In Words : ${escapeHtml(numberToWords(totals.grandTotal))}
       </div>
       <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:9px;">
         Issued On : ${new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'})} ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}
       </div>
-      ${footerHTML}
+      ${bankSignaturesHTML}
       <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:7px;color:#333;">
         I / we certify that our registration certificate under the GST Act, 2017 is in force on the date on which the supply of goods specified in this Tax Invoice is made by me/us & the transaction of supply covered by this Tax Invoice has been effected by me/us & it shall be accounted for in the turnover of supplies while filing of returns & the due tax if any payable on the supplies has been paid or shall be paid & further certified that the particulars given above are true and correct & the amount indicated represents the prices actually charged and that there is no flow additional consideration directly or indirectly from the buyer. Interest @ 18% p.a. charged on all outstanding more than one month after invoice has been rendered.
       </div>
@@ -508,13 +507,11 @@ function generatePrintHTML(data, totals) {
   `;
 }
 
+// ===== PRINT =====
 function printInvoice() {
-  const data = getFormData();
-  const totals = calculateTotals();
-  const printHTML = generatePrintHTML(data, totals);
-  document.getElementById('printArea').innerHTML = printHTML;
-
-  setTimeout(() => window.print(), 200);
+  // The preview is already paginated to A4 pages; just print the page.
+  // Our @media print CSS hides everything except the .invoice-page sections.
+  window.print();
 }
 
 // ===== RESIZABLE PANEL =====
