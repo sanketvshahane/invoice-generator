@@ -7,7 +7,18 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-container">
+  <!-- PASSWORD GATE -->
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-box">
+      <h2>GST Invoice Generator</h2>
+      <p>Enter password to continue</p>
+      <input type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')checkAuth()">
+      <button onclick="checkAuth()">Login</button>
+      <p class="auth-error" id="authError"></p>
+    </div>
+  </div>
+
+  <div class="app-container" id="appContainer" style="display:none;">
     <!-- FORM PANEL -->
     <div class="form-panel" id="formPanel">
       <h1>GST Invoice Generator</h1>
