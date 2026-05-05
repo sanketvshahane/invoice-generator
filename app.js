@@ -189,7 +189,7 @@ function getFormData() {
     invoice: {
       no: g('invoiceNo'), date: g('invoiceDate'), poNo: g('poNo'), poDate: g('poDate'),
       challanNo: g('challanNo'), payTerms: g('payTerms'), dueDate: g('dueDate'),
-      delivery: g('delivery'), kindAttn: g('kindAttn')
+      delivery: g('delivery'), kindAttn: g('kindAttn'), vendorCode: g('vendorCode')
     },
     buyer: {
       name: g('buyerName'), address: g('buyerAddress'), gstin: g('buyerGstin'),
@@ -203,245 +203,121 @@ function getFormData() {
   };
 }
 
-function generateInvoiceHTML(data, totals) {
-  const { seller, irn, invoice, buyer, bank } = data;
+// ===== PAGED INVOICE RENDERING =====
+// Builds an array of A4 .preview-page divs. The same HTML is used for both the
+// on-screen preview and for printing (so what you see is exactly what prints).
 
-  const itemRows = lineItems.map((item, i) => {
-    const amount = calculateLineAmount(item);
-    return `<tr>
-      <td>${i + 1}</td>
-      <td>${item.psNo}</td>
-      <td class="desc">${item.description}</td>
-      <td>${item.hsn}</td>
-      <td>${item.taxPct.toFixed(2)}</td>
-      <td>${item.qty.toFixed(2)}</td>
-      <td>${item.unit}</td>
-      <td>${item.rate.toFixed(2)}</td>
-      <td>${item.disPct > 0 ? item.disPct.toFixed(2) : ''}</td>
-      <td class="amount">${formatCurrency(amount)}</td>
-    </tr>`;
-  }).join('');
-
-  const taxRows = totals.taxes.map(t =>
-    `<div class="row tax"><span>${t.label} on Amt : ${formatCurrency(t.on)}</span><span>${formatCurrency(t.amount)}</span></div>`
-  ).join('');
-
+// Header content shown at the top of every page (~75mm tall area).
+function buildPageHeaderHTML(data) {
+  const { seller, irn, invoice, buyer } = data;
   return `
-    <div class="inv-header-top">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;font-size:9px;">
       <span>Office Copy</span>
       <span>(U/s 31 of CGST Act & SGST Act R.W. Sec. 20 of IGST Act)</span>
-      <span class="inv-title">GST Tax Invoice</span>
+      <span style="border:1px solid #000;padding:2px 8px;font-weight:bold;font-size:11px;">GST Tax Invoice</span>
     </div>
-
-    <div class="inv-outer">
-      <div class="inv-top-block">
-        <div class="inv-top-left">
-          <div class="inv-irn-left">
-            <div><strong>Ack. No.</strong> &nbsp;&nbsp; ${irn.ackNo}</div>
-            <div><strong>Ack. Date.</strong> &nbsp; ${irn.ackDate}</div>
-            <div><strong>IRN No.</strong> &nbsp;&nbsp;&nbsp; <span class="irn-text">${irn.irnNo}</span></div>
-          </div>
-          <div class="inv-company-inner">
-            <h2>${seller.name}</h2>
-            <p>${seller.address}</p>
-            <p>Mob: ${seller.phone}${seller.email ? ' | Email: ' + seller.email : ''}</p>
-            ${seller.website ? `<p>Website: ${seller.website}</p>` : ''}
-          </div>
+    <div style="display:grid;grid-template-columns:1fr auto;border:1px solid #000;">
+      <div>
+        <div style="padding:3px 6px;font-size:9px;border-bottom:1px solid #000;">
+          <div><strong>Ack. No.</strong> ${irn.ackNo}</div>
+          <div><strong>Ack. Date.</strong> ${irn.ackDate}</div>
+          <div><strong>IRN No.</strong> <span style="font-size:7px;word-break:break-all;">${irn.irnNo}</span></div>
         </div>
-        <div class="inv-top-right">
-          ${qrCodeDataUrl
-            ? `<img src="${qrCodeDataUrl}" class="qr-image" alt="QR Code">`
-            : `<div class="qr-placeholder">QR</div>`}
+        <div style="text-align:center;padding:5px 6px;">
+          <div style="font-size:18px;font-weight:bold;letter-spacing:1px;">${seller.name}</div>
+          <div style="font-size:9px;">${seller.address}</div>
+          <div style="font-size:9px;">Mob: ${seller.phone}${seller.email ? ' | Email: ' + seller.email : ''}${seller.website ? ' | Website: ' + seller.website : ''}</div>
         </div>
       </div>
-
-      <div class="inv-details-grid">
-        <div class="left">
-          <div class="row gstin-row"><span>GSTIN : ${seller.gstin}</span><span>W.E.F. 04/03/2026</span></div>
-          <div class="row"><span>Invoice No. : ${invoice.no}</span><span>Date : ${formatDate(invoice.date)}</span></div>
-          <div class="row"><span>P.O. No. : ${invoice.poNo}</span><span>Date : ${formatDate(invoice.poDate)}</span></div>
-          <div class="row"><span>Delivery : ${invoice.delivery}</span></div>
-        </div>
-        <div class="right">
-          <div class="row gstin-row"><span>State : ${seller.stateCode} ${seller.state}</span><span>PAN No. ${seller.pan}</span></div>
-          <div class="row"><span>Challan No. : ${invoice.challanNo}</span></div>
-          <div class="row"><span>Pay. Terms : ${invoice.payTerms}</span><span>Due On : ${formatDate(invoice.dueDate)}</span></div>
-          <div class="row"><span>Kind Attn : ${invoice.kindAttn}</span></div>
-        </div>
+      <div style="border-left:1px solid #000;display:flex;align-items:center;justify-content:center;padding:6px;">
+        ${qrCodeDataUrl
+          ? `<img src="${qrCodeDataUrl}" style="width:72px;height:72px;" alt="QR">`
+          : `<div style="width:68px;height:68px;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:7px;color:#999;">QR</div>`}
       </div>
-
-      <div class="inv-buyer">
-        <div class="left">
-          <h4>Buyer & Consignee:</h4>
-          <p><strong>${buyer.name}</strong></p>
-          <p>${buyer.address}</p>
-        </div>
-        <div class="right">
-          <div class="row"><span>GST. No. :</span><span>${buyer.gstin}</span></div>
-          <div class="row"><span>PAN No. :</span><span>${buyer.pan}</span></div>
-          <div class="row"><span>Reg.Type :</span><span>${buyer.regType}</span></div>
-          <div class="row"><span>State Code :</span><span>${buyer.stateCode} ${buyer.state}</span></div>
-        </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:9px;">
+      <div style="padding:3px 6px;">
+        <div>GSTIN : ${seller.gstin} &nbsp; W.E.F. 04/03/2026</div>
+        <div>Invoice No. : ${invoice.no} &nbsp;&nbsp; Date : ${formatDate(invoice.date)}</div>
+        <div>P.O. No. : ${invoice.poNo} &nbsp;&nbsp; Date : ${formatDate(invoice.poDate)}</div>
+        <div>Delivery : ${invoice.delivery}</div>
+        <div>Vendor Code : ${invoice.vendorCode}</div>
       </div>
-
-      <table class="inv-table">
-        <thead>
-          <tr>
-            <th>Sn.</th>
-            <th>P.S.No</th>
-            <th>Description</th>
-            <th>HSN/SAC</th>
-            <th>Tax%</th>
-            <th>Quantity</th>
-            <th>Units</th>
-            <th>Rate</th>
-            <th>Dis%</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemRows}
-          <tr class="spacer-row"><td colspan="10"></td></tr>
-        </tbody>
-      </table>
-
-      ${seller.msme ? `<div class="inv-msme">MSME No. : ${seller.msme}</div>` : ''}
-
-      <div class="inv-totals">
-        <div class="row sub"><span>Sub Total</span><span>${formatCurrency(totals.subTotal)}</span></div>
-        ${taxRows}
-        <div class="row grand"><span>Grand Total</span><span>${formatCurrency(totals.grandTotal)}</span></div>
+      <div style="padding:3px 6px;border-left:1px solid #000;">
+        <div>State : ${seller.stateCode} ${seller.state} &nbsp; PAN No. ${seller.pan}</div>
+        <div>Challan No. : ${invoice.challanNo}</div>
+        <div>Pay. Terms : ${invoice.payTerms} &nbsp; Due On : ${formatDate(invoice.dueDate)}</div>
+        <div>Kind Attn : ${invoice.kindAttn}</div>
       </div>
-
-      <div class="inv-amount-words">
-        Amount In Words : ${numberToWords(totals.grandTotal)}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:9px;">
+      <div style="padding:3px 6px;">
+        <div style="text-decoration:underline;font-weight:bold;">Buyer & Consignee:</div>
+        <div><strong>${buyer.name}</strong></div>
+        <div>${buyer.address}</div>
       </div>
-
-      <div class="inv-issued">
-        Issued On : ${new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'})} ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}
-      </div>
-
-      <div class="inv-footer">
-        <div class="left">
-          <p><strong>Our Bank Details :</strong></p>
-          <p>Bank Name : ${bank.name}</p>
-          <p>Account Name : ${bank.accName}</p>
-          <p>Branch : ${bank.branch}</p>
-          <p>A/c No : ${bank.accNo}</p>
-          <p>IFSC/Neft Code : ${bank.ifsc}</p>
-        </div>
-        <div class="right">
-          <p>For ${seller.name}</p>
-        </div>
-      </div>
-
-      <div class="inv-signatures">
-        <div>Customer Receive Sign</div>
-        <div>Prepared by</div>
-        <div>Authorised Signatory</div>
-      </div>
-
-      <div class="inv-disclaimer">
-        I / we certify that our registration certificate under the GST Act, 2017 is in force on the date on which the supply of goods specified in this Tax Invoice is made by me/us & the transaction of supply covered by this Tax Invoice has been effected by me/us & it shall be accounted for in the turnover of supplies while filing of returns & the due tax if any payable on the supplies has been paid or shall be paid & further certified that the particulars given above are true and correct & the amount indicated represents the prices actually charged and that there is no flow additional consideration directly or indirectly from the buyer. Interest @ 18% p.a. charged on all outstanding more than one month after invoice has been rendered.
+      <div style="padding:3px 6px;border-left:1px solid #000;">
+        <div>GST. No. : ${buyer.gstin}</div>
+        <div>PAN No. : ${buyer.pan}</div>
+        <div>Reg.Type : ${buyer.regType}</div>
+        <div>State Code : ${buyer.stateCode} ${buyer.state}</div>
       </div>
     </div>
   `;
 }
 
-function updatePreview() {
-  const data = getFormData();
-  const totals = calculateTotals();
-  const html = generateInvoiceHTML(data, totals);
-  document.getElementById('invoicePreview').innerHTML = html;
+// Footer content shown at the bottom of every page (~55mm tall area). Embeds page indicator.
+function buildPageFooterHTML(data, pageNum, totalPages) {
+  const { seller, bank } = data;
+  return `
+    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;font-size:9px;">
+      <div style="padding:3px 6px;border-right:1px solid #000;">
+        <p style="font-weight:bold;text-decoration:underline;margin:0 0 1px 0;">Our Bank Details :</p>
+        <p style="margin:0;">Bank Name : ${bank.name}</p>
+        <p style="margin:0;">Account Name : ${bank.accName}</p>
+        <p style="margin:0;">Branch : ${bank.branch}</p>
+        <p style="margin:0;">A/c No : ${bank.accNo}</p>
+        <p style="margin:0;">IFSC/Neft Code : ${bank.ifsc}</p>
+      </div>
+      <div style="padding:3px 6px;text-align:right;">
+        <p style="font-weight:bold;text-decoration:underline;margin:0;">For ${seller.name}</p>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #000;border-top:none;text-align:center;font-size:9px;">
+      <div style="padding:14px 6px 3px;border-right:1px solid #000;">Customer Receive Sign</div>
+      <div style="padding:14px 6px 3px;border-right:1px solid #000;">Prepared by</div>
+      <div style="padding:14px 6px 3px;">Authorised Signatory</div>
+    </div>
+    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:7px;color:#333;line-height:1.25;display:flex;gap:6px;align-items:flex-end;">
+      <span style="flex:1;">I / we certify that our registration certificate under the GST Act, 2017 is in force on the date on which the supply of goods specified in this Tax Invoice is made by me/us & the transaction of supply covered by this Tax Invoice has been effected by me/us & it shall be accounted for in the turnover of supplies while filing of returns & the due tax if any payable on the supplies has been paid or shall be paid & further certified that the particulars given above are true and correct & the amount indicated represents the prices actually charged and that there is no flow additional consideration directly or indirectly from the buyer. Interest @ 18% p.a. charged on all outstanding more than one month after invoice has been rendered.</span>
+      <span style="font-weight:bold;font-size:8px;white-space:nowrap;">Page ${pageNum} of ${totalPages}</span>
+    </div>
+  `;
 }
 
-// ===== PRINT =====
-function generatePrintHTML(data, totals) {
-  const { seller, irn, invoice, buyer, bank } = data;
-
-  const headerHTML = `
-    <div style="font-family:'Times New Roman',serif;font-size:10px;padding:4px 0;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;font-size:9px;">
-        <span>Office Copy</span>
-        <span>(U/s 31 of CGST Act & SGST Act R.W. Sec. 20 of IGST Act)</span>
-        <span style="border:1px solid #000;padding:2px 8px;font-weight:bold;font-size:11px;">GST Tax Invoice</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr auto;border:1px solid #000;">
-        <div>
-          <div style="padding:4px 6px;font-size:9px;border-bottom:1px solid #000;">
-            <div><strong>Ack. No.</strong> ${irn.ackNo}</div>
-            <div><strong>Ack. Date.</strong> ${irn.ackDate}</div>
-            <div><strong>IRN No.</strong> <span style="font-size:7px;word-break:break-all;">${irn.irnNo}</span></div>
-          </div>
-          <div style="text-align:center;padding:6px;">
-            <div style="font-size:18px;font-weight:bold;letter-spacing:1px;">${seller.name}</div>
-            <div style="font-size:9px;">${seller.address}</div>
-            <div style="font-size:9px;">Mob: ${seller.phone}${seller.email ? ' | Email: ' + seller.email : ''}${seller.website ? ' | Website: ' + seller.website : ''}</div>
-          </div>
-        </div>
-        <div style="border-left:1px solid #000;display:flex;align-items:center;justify-content:center;padding:6px;">
-          ${qrCodeDataUrl
-            ? `<img src="${qrCodeDataUrl}" style="width:75px;height:75px;" alt="QR">`
-            : `<div style="width:70px;height:70px;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:7px;color:#999;">QR</div>`}
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:9px;">
-        <div style="padding:3px 6px;">
-          <div>GSTIN : ${seller.gstin} &nbsp; W.E.F. 04/03/2026</div>
-          <div>Invoice No. : ${invoice.no} &nbsp;&nbsp; Date : ${formatDate(invoice.date)}</div>
-          <div>P.O. No. : ${invoice.poNo} &nbsp;&nbsp; Date : ${formatDate(invoice.poDate)}</div>
-          <div>Delivery : ${invoice.delivery}</div>
-        </div>
-        <div style="padding:3px 6px;border-left:1px solid #000;">
-          <div>State : ${seller.stateCode} ${seller.state} &nbsp; PAN No. ${seller.pan}</div>
-          <div>Challan No. : ${invoice.challanNo}</div>
-          <div>Pay. Terms : ${invoice.payTerms} &nbsp; Due On : ${formatDate(invoice.dueDate)}</div>
-          <div>Kind Attn : ${invoice.kindAttn}</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:9px;">
-        <div style="padding:3px 6px;">
-          <div style="text-decoration:underline;font-weight:bold;">Buyer & Consignee:</div>
-          <div><strong>${buyer.name}</strong></div>
-          <div>${buyer.address}</div>
-        </div>
-        <div style="padding:3px 6px;border-left:1px solid #000;">
-          <div>GST. No. : ${buyer.gstin}</div>
-          <div>PAN No. : ${buyer.pan}</div>
-          <div>Reg.Type : ${buyer.regType}</div>
-          <div>State Code : ${buyer.stateCode} ${buyer.state}</div>
-        </div>
-      </div>
-    </div>
+function buildColumnHeadersHTML() {
+  const css = 'border:1px solid #000;padding:3px;background:#f5f5f5;font-weight:bold;font-size:9px;';
+  return `
+    <tr>
+      <th style="${css}width:3%;">Sn.</th>
+      <th style="${css}width:5%;">P.S.No</th>
+      <th style="${css}width:40%;">Description</th>
+      <th style="${css}width:7%;">HSN/SAC</th>
+      <th style="${css}width:5%;">Tax%</th>
+      <th style="${css}width:8%;">Quantity</th>
+      <th style="${css}width:5%;">Units</th>
+      <th style="${css}width:8%;">Rate</th>
+      <th style="${css}width:5%;">Dis%</th>
+      <th style="${css}width:14%;">Amount</th>
+    </tr>
   `;
+}
 
-  const footerHTML = `
-    <div style="font-family:'Times New Roman',serif;font-size:9px;border-top:1px solid #000;padding-top:4px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;">
-        <div style="padding:4px 6px;border-right:1px solid #000;">
-          <p><strong>Our Bank Details :</strong></p>
-          <p>Bank Name : ${bank.name}</p>
-          <p>Account Name : ${bank.accName}</p>
-          <p>Branch : ${bank.branch}</p>
-          <p>A/c No : ${bank.accNo}</p>
-          <p>IFSC/Neft Code : ${bank.ifsc}</p>
-        </div>
-        <div style="padding:4px 6px;text-align:right;">
-          <p><strong>For ${seller.name}</strong></p>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #000;border-top:none;text-align:center;">
-        <div style="padding:15px 6px 4px;border-right:1px solid #000;">Customer Receive Sign</div>
-        <div style="padding:15px 6px 4px;border-right:1px solid #000;">Prepared by</div>
-        <div style="padding:15px 6px 4px;">Authorised Signatory</div>
-      </div>
-    </div>
-  `;
-
-  const itemRows = lineItems.map((item, i) => {
+function buildItemRowsHTML(items, startIdx) {
+  return items.map((item, i) => {
     const amount = calculateLineAmount(item);
     return `<tr>
-      <td class="print-cell" style="text-align:center;width:3%;">${i + 1}</td>
+      <td class="print-cell" style="text-align:center;width:3%;">${startIdx + i + 1}</td>
       <td class="print-cell" style="text-align:center;width:5%;">${item.psNo}</td>
       <td class="print-cell" style="text-align:left;width:40%;">${item.description}</td>
       <td class="print-cell" style="text-align:center;width:7%;">${item.hsn}</td>
@@ -453,66 +329,177 @@ function generatePrintHTML(data, totals) {
       <td class="print-cell" style="text-align:right;width:14%;">${formatCurrency(amount)}</td>
     </tr>`;
   }).join('');
+}
 
+function buildTotalsHTML(data, totals) {
+  const { seller } = data;
   const taxRows = totals.taxes.map(t =>
     `<div style="display:flex;justify-content:flex-end;gap:20px;padding:1px 6px;font-size:10px;"><span>${t.label} on Amt : ${formatCurrency(t.on)}</span><span>${formatCurrency(t.amount)}</span></div>`
   ).join('');
 
-  const colHeadersCSS = 'border:1px solid #000;padding:3px;background:#f5f5f5;font-weight:bold;font-size:9px;';
-
   return `
-    <table class="page-table" style="width:100%;border-collapse:collapse;font-family:'Times New Roman',serif;font-size:10px;">
-      <thead>
-        <tr><td colspan="10" style="padding:0;border:none;">${headerHTML}</td></tr>
-        <tr>
-          <th style="${colHeadersCSS}">Sn.</th>
-          <th style="${colHeadersCSS}">P.S.No</th>
-          <th style="${colHeadersCSS}">Description</th>
-          <th style="${colHeadersCSS}">HSN/SAC</th>
-          <th style="${colHeadersCSS}">Tax%</th>
-          <th style="${colHeadersCSS}">Quantity</th>
-          <th style="${colHeadersCSS}">Units</th>
-          <th style="${colHeadersCSS}">Rate</th>
-          <th style="${colHeadersCSS}">Dis%</th>
-          <th style="${colHeadersCSS}">Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${itemRows}
-      </tbody>
-    </table>
-
-    <!-- Totals and footer appear only once at natural end -->
-    <div style="font-family:'Times New Roman',serif;font-size:10px;">
-      <div style="font-size:10px;font-weight:bold;padding:3px 6px;border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;">MSME No. : ${seller.msme}</div>
-      <div style="border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;padding:3px 6px;display:flex;justify-content:space-between;font-size:11px;font-weight:bold;">
-        <span>Sub Total</span><span>${formatCurrency(totals.subTotal)}</span>
-      </div>
-      <div style="border-left:1px solid #000;border-right:1px solid #000;">
-        ${taxRows}
-      </div>
-      <div style="border:1px solid #000;border-top:2px solid #000;padding:4px 6px;display:flex;justify-content:space-between;font-size:12px;font-weight:bold;">
-        <span>Grand Total</span><span>${formatCurrency(totals.grandTotal)}</span>
-      </div>
-      <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:10px;">
-        Amount In Words : ${numberToWords(totals.grandTotal)}
-      </div>
-      <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:9px;">
-        Issued On : ${new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'})} ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}
-      </div>
-      ${footerHTML}
-      <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:7px;color:#333;">
-        I / we certify that our registration certificate under the GST Act, 2017 is in force on the date on which the supply of goods specified in this Tax Invoice is made by me/us & the transaction of supply covered by this Tax Invoice has been effected by me/us & it shall be accounted for in the turnover of supplies while filing of returns & the due tax if any payable on the supplies has been paid or shall be paid & further certified that the particulars given above are true and correct & the amount indicated represents the prices actually charged and that there is no flow additional consideration directly or indirectly from the buyer. Interest @ 18% p.a. charged on all outstanding more than one month after invoice has been rendered.
-      </div>
+    ${seller.msme ? `<div style="font-size:10px;font-weight:bold;padding:3px 6px;border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;">MSME No. : ${seller.msme}</div>` : ''}
+    <div style="border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;padding:3px 6px;display:flex;justify-content:space-between;font-size:11px;font-weight:bold;">
+      <span>Sub Total</span><span>${formatCurrency(totals.subTotal)}</span>
+    </div>
+    <div style="border-left:1px solid #000;border-right:1px solid #000;">
+      ${taxRows}
+    </div>
+    <div style="border:1px solid #000;border-top:2px solid #000;padding:4px 6px;display:flex;justify-content:space-between;font-size:12px;font-weight:bold;">
+      <span>Grand Total</span><span>${formatCurrency(totals.grandTotal)}</span>
+    </div>
+    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:10px;">
+      Amount In Words : ${numberToWords(totals.grandTotal)}
+    </div>
+    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:9px;">
+      Issued On : ${new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'})} ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}
     </div>
   `;
 }
 
+// Splits line items into pages by physically measuring them in the DOM.
+// This perfectly handles any amount of wrapping text in descriptions.
+function paginateItemsDOM(data, totals, items) {
+  const measureDiv = document.createElement('div');
+  measureDiv.style.position = 'absolute';
+  measureDiv.style.visibility = 'hidden';
+  measureDiv.style.top = '-9999px';
+  measureDiv.style.left = '-9999px';
+  measureDiv.innerHTML = `
+    <div class="preview-page" style="width:210mm;height:297mm;">
+      <div class="preview-body" id="measureBody" style="position:absolute;top:66mm;bottom:45mm;left:8mm;right:8mm;display:flex;flex-direction:column;">
+        <table class="print-items-table" id="measureTable" style="width:100%;border-collapse:collapse;font-size:10px;font-family:'Times New Roman',Times,serif;">
+          <thead>${buildColumnHeadersHTML()}</thead>
+          <tbody id="measureTbody"></tbody>
+        </table>
+        <div id="measureTotals" class="print-totals" style="font-family:'Times New Roman',Times,serif;display:none;">
+          ${buildTotalsHTML(data, totals)}
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(measureDiv);
+
+  const measureBody = document.getElementById('measureBody');
+  const measureTable = document.getElementById('measureTable');
+  const measureTbody = document.getElementById('measureTbody');
+  const measureTotals = document.getElementById('measureTotals');
+  
+  const MAX_HEIGHT = measureBody.clientHeight; 
+
+  const pages = [];
+  let currentPageItems = [];
+  let startIdx = 0;
+  
+  if (items.length === 0) {
+    pages.push({ items: [], hasTotals: true, startIdx: 0 });
+    document.body.removeChild(measureDiv);
+    return pages;
+  }
+
+  for (let i = 0; i < items.length; i++) {
+    currentPageItems.push(items[i]);
+    measureTbody.innerHTML = buildItemRowsHTML(currentPageItems, startIdx);
+    
+    // Check if adding this item exceeded the allowed height
+    if (measureTable.offsetHeight > MAX_HEIGHT - 2) {
+      if (currentPageItems.length === 1) {
+        // Item is larger than a whole page on its own. Force it to avoid infinite loop.
+        pages.push({ items: [...currentPageItems], hasTotals: false, startIdx });
+        startIdx += currentPageItems.length;
+        currentPageItems = [];
+      } else {
+        // Pop the item that pushed it over the edge
+        currentPageItems.pop();
+        pages.push({ items: [...currentPageItems], hasTotals: false, startIdx });
+        startIdx += currentPageItems.length;
+        
+        // Start new page with this item
+        currentPageItems = [items[i]];
+        measureTbody.innerHTML = buildItemRowsHTML(currentPageItems, startIdx);
+      }
+    }
+  }
+
+  if (currentPageItems.length > 0) {
+    measureTotals.style.display = 'block';
+    // Measure table and totals together
+    const totalHeight = measureTable.offsetHeight + measureTotals.offsetHeight;
+    
+    if (totalHeight > MAX_HEIGHT - 2) {
+      // Totals don't fit on this page, push to next
+      pages.push({ items: [...currentPageItems], hasTotals: false, startIdx });
+      pages.push({ items: [], hasTotals: true, startIdx: startIdx + currentPageItems.length });
+    } else {
+      pages.push({ items: [...currentPageItems], hasTotals: true, startIdx });
+    }
+  }
+
+  document.body.removeChild(measureDiv);
+  return pages;
+}
+
+function buildPagedInvoiceHTML(data, totals) {
+  const headerHTML = buildPageHeaderHTML(data);
+  const colHeaders = buildColumnHeadersHTML();
+  const totalsHTML = buildTotalsHTML(data, totals);
+
+  const pages = paginateItemsDOM(data, totals, lineItems);
+  const totalPages = pages.length;
+
+  return pages.map((page, i) => {
+    const footerHTML = buildPageFooterHTML(data, i + 1, totalPages);
+    const itemRows = buildItemRowsHTML(page.items, page.startIdx);
+
+    // The filler row absorbs the remaining vertical space of the table
+    // It gives us continuous borders all the way down to the totals/footer.
+    const fillerRow = `
+      <tr style="height:100%;">
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+      </tr>
+    `;
+
+    return `
+      <div class="preview-page">
+        <div class="preview-header">${headerHTML}</div>
+        <div class="preview-body">
+          <table class="print-items-table" style="width:100%;border-collapse:collapse;font-size:10px;font-family:'Times New Roman',Times,serif;flex-grow:1;">
+            <thead>${colHeaders}</thead>
+            <tbody>
+              ${itemRows}
+              ${fillerRow}
+            </tbody>
+          </table>
+          ${page.hasTotals ? `<div class="print-totals" style="font-family:'Times New Roman',Times,serif;flex-shrink:0;">${totalsHTML}</div>` : ''}
+        </div>
+        <div class="preview-footer">${footerHTML}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updatePreview() {
+  const data = getFormData();
+  const totals = calculateTotals();
+  const html = buildPagedInvoiceHTML(data, totals);
+  document.getElementById('invoicePreview').innerHTML = html;
+}
+
+// ===== PRINT =====
 function printInvoice() {
   const data = getFormData();
   const totals = calculateTotals();
-  const printHTML = generatePrintHTML(data, totals);
-  document.getElementById('printArea').innerHTML = printHTML;
+  const html = buildPagedInvoiceHTML(data, totals);
+  document.getElementById('printArea').innerHTML = html;
 
   setTimeout(() => window.print(), 200);
 }
