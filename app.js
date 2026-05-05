@@ -208,11 +208,11 @@ function getFormData() {
 // on-screen preview and for printing (so what you see is exactly what prints).
 
 // Header content shown at the top of every page (~75mm tall area).
-function buildPageHeaderHTML(data) {
+function buildPageHeaderHTML(data, copyName) {
   const { seller, irn, invoice, buyer } = data;
   return `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;font-size:9px;">
-      <span>Office Copy</span>
+      <span>${copyName}</span>
       <span>(U/s 31 of CGST Act & SGST Act R.W. Sec. 20 of IGST Act)</span>
       <span style="border:1px solid #000;padding:2px 8px;font-weight:bold;font-size:11px;">GST Tax Invoice</span>
     </div>
@@ -440,50 +440,55 @@ function paginateItemsDOM(data, totals, items) {
 }
 
 function buildPagedInvoiceHTML(data, totals) {
-  const headerHTML = buildPageHeaderHTML(data);
   const colHeaders = buildColumnHeadersHTML();
   const totalsHTML = buildTotalsHTML(data, totals);
 
   const pages = paginateItemsDOM(data, totals, lineItems);
   const totalPages = pages.length;
 
-  return pages.map((page, i) => {
-    const footerHTML = buildPageFooterHTML(data, i + 1, totalPages);
-    const itemRows = buildItemRowsHTML(page.items, page.startIdx);
+  const copyNames = ['Original', 'Duplicate', 'Transporter Copy', 'Office Copy'];
 
-    // The filler row absorbs the remaining vertical space of the table
-    // It gives us continuous borders all the way down to the totals/footer.
-    const fillerRow = `
-      <tr style="height:100%;">
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-        <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
-      </tr>
-    `;
+  return copyNames.map(copyName => {
+    const headerHTML = buildPageHeaderHTML(data, copyName);
 
-    return `
-      <div class="preview-page">
-        <div class="preview-header">${headerHTML}</div>
-        <div class="preview-body">
-          <table class="print-items-table" style="width:100%;border-collapse:collapse;font-size:10px;font-family:'Times New Roman',Times,serif;flex-grow:1;">
-            <thead>${colHeaders}</thead>
-            <tbody>
-              ${itemRows}
-              ${fillerRow}
-            </tbody>
-          </table>
-          ${page.hasTotals ? `<div class="print-totals" style="font-family:'Times New Roman',Times,serif;flex-shrink:0;">${totalsHTML}</div>` : ''}
+    return pages.map((page, i) => {
+      const footerHTML = buildPageFooterHTML(data, i + 1, totalPages);
+      const itemRows = buildItemRowsHTML(page.items, page.startIdx);
+
+      // The filler row absorbs the remaining vertical space of the table
+      // It gives us continuous borders all the way down to the totals/footer.
+      const fillerRow = `
+        <tr style="height:100%;">
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+          <td style="border-left:1px solid #000; border-right:1px solid #000; border-bottom:1px solid #000;"></td>
+        </tr>
+      `;
+
+      return `
+        <div class="preview-page">
+          <div class="preview-header">${headerHTML}</div>
+          <div class="preview-body">
+            <table class="print-items-table" style="width:100%;border-collapse:collapse;font-size:10px;font-family:'Times New Roman',Times,serif;flex-grow:1;">
+              <thead>${colHeaders}</thead>
+              <tbody>
+                ${itemRows}
+                ${fillerRow}
+              </tbody>
+            </table>
+            ${page.hasTotals ? `<div class="print-totals" style="font-family:'Times New Roman',Times,serif;flex-shrink:0;">${totalsHTML}</div>` : ''}
+          </div>
+          <div class="preview-footer">${footerHTML}</div>
         </div>
-        <div class="preview-footer">${footerHTML}</div>
-      </div>
-    `;
+      `;
+    }).join('');
   }).join('');
 }
 
