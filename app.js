@@ -224,6 +224,7 @@ function buildPageHeaderHTML(data, copyName) {
         </div>
         <div style="text-align:center;padding:5px 6px;">
           <div style="font-size:18px;font-weight:bold;letter-spacing:1px;">${seller.name}</div>
+          <div style="font-size:10px;font-weight:bold;margin-bottom:2px;">Electrical Engineering Projects and Services</div>
           <div style="font-size:9px;">${seller.address}</div>
           <div style="font-size:9px;">Mob: ${seller.phone}${seller.email ? ' | Email: ' + seller.email : ''}${seller.website ? ' | Website: ' + seller.website : ''}</div>
         </div>
@@ -336,7 +337,6 @@ function buildTotalsHTML(data, totals) {
   ).join('');
 
   return `
-    ${seller.msme ? `<div style="font-size:10px;font-weight:bold;padding:3px 6px;border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;">MSME No. : ${seller.msme}</div>` : ''}
     <div style="border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;padding:3px 6px;display:flex;justify-content:space-between;font-size:11px;font-weight:bold;">
       <span>Sub Total</span><span>${formatCurrency(totals.subTotal)}</span>
     </div>
@@ -349,8 +349,8 @@ function buildTotalsHTML(data, totals) {
     <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:10px;">
       Amount In Words : ${numberToWords(totals.grandTotal)}
     </div>
-    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:9px;">
-      Issued On : ${new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'2-digit', year:'numeric'})} ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'})}
+    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:9px;font-weight:bold;">
+      MSME No. : ${seller.msme}
     </div>
   `;
 }
