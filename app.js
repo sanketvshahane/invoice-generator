@@ -184,7 +184,7 @@ function getFormData() {
       pan: g('sellerPan'), state: g('sellerState'), stateCode: g('sellerStateCode'), msme: g('sellerMsme')
     },
     irn: {
-      ackNo: g('ackNo'), ackDate: g('ackDate'), irnNo: g('irnNo')
+      ackNo: g('ackNo'), ackDate: g('ackDate')
     },
     invoice: {
       no: g('invoiceNo'), date: g('invoiceDate'), poNo: g('poNo'), poDate: g('poDate'),
@@ -219,9 +219,8 @@ function buildPageHeaderHTML(data, copyName) {
     <div style="display:grid;grid-template-columns:1fr auto;border:1px solid #000;">
       <div>
         <div style="padding:3px 6px;font-size:9px;border-bottom:1px solid #000;">
-          <div><strong>Ack. No.</strong> ${irn.ackNo}</div>
-          <div><strong>Ack. Date.</strong> ${irn.ackDate}</div>
-          <div><strong>IRN No.</strong> <span style="font-size:7px;word-break:break-all;">${irn.irnNo}</span></div>
+          <div><strong>Eway Bill No.</strong> ${irn.ackNo}</div>
+          <div><strong>Eway Bill Date</strong> ${irn.ackDate}</div>
         </div>
         <div style="text-align:center;padding:5px 6px;">
           <div style="font-size:18px;font-weight:bold;letter-spacing:1px;">${seller.name}</div>
@@ -270,7 +269,7 @@ function buildPageHeaderHTML(data, copyName) {
 function buildPageFooterHTML(data, pageNum, totalPages) {
   const { seller, bank } = data;
   return `
-    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;font-size:9px;">
+    <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;border:1px solid #000;font-size:9px;min-height:22mm;">
       <div style="padding:3px 6px;border-right:1px solid #000;">
         <p style="font-weight:bold;text-decoration:underline;margin:0 0 1px 0;">Our Bank Details :</p>
         <p style="margin:0;">Bank Name : ${bank.name}</p>
@@ -279,14 +278,13 @@ function buildPageFooterHTML(data, pageNum, totalPages) {
         <p style="margin:0;">A/c No : ${bank.accNo}</p>
         <p style="margin:0;">IFSC/Neft Code : ${bank.ifsc}</p>
       </div>
-      <div style="padding:3px 6px;text-align:right;">
-        <p style="font-weight:bold;text-decoration:underline;margin:0;">For ${seller.name}</p>
+      <div style="padding:3px 6px;border-right:1px solid #000;display:flex;align-items:flex-end;justify-content:center;">
+        <span style="margin-bottom:4px;">Customer Receive Sign</span>
       </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #000;border-top:none;text-align:center;font-size:9px;">
-      <div style="padding:14px 6px 3px;border-right:1px solid #000;">Customer Receive Sign</div>
-      <div style="padding:14px 6px 3px;border-right:1px solid #000;">Prepared by</div>
-      <div style="padding:14px 6px 3px;">Authorised Signatory</div>
+      <div style="padding:3px 6px;display:flex;flex-direction:column;justify-content:space-between;text-align:right;">
+        <p style="font-weight:bold;text-decoration:underline;margin:0;">For ${seller.name}</p>
+        <span style="margin-bottom:4px;align-self:flex-end;text-align:center;width:100%;">Authorised Signatory</span>
+      </div>
     </div>
     <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:7px;color:#333;line-height:1.25;display:flex;gap:6px;align-items:flex-end;">
       <span style="flex:1;">I / we certify that our registration certificate under the GST Act, 2017 is in force on the date on which the supply of goods specified in this Tax Invoice is made by me/us & the transaction of supply covered by this Tax Invoice has been effected by me/us & it shall be accounted for in the turnover of supplies while filing of returns & the due tax if any payable on the supplies has been paid or shall be paid & further certified that the particulars given above are true and correct & the amount indicated represents the prices actually charged and that there is no flow additional consideration directly or indirectly from the buyer. Interest @ 18% p.a. charged on all outstanding more than one month after invoice has been rendered.</span>
