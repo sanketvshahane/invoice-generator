@@ -270,6 +270,9 @@ function buildPageHeaderHTML(data, copyName) {
 function buildPageFooterHTML(data, pageNum, totalPages) {
   const { seller, bank } = data;
   return `
+    <div style="border:1px solid #000;border-bottom:none;padding:3px 6px;font-size:11px;font-weight:bold;">
+      MSME No. : ${seller.msme}
+    </div>
     <div style="display:grid;grid-template-columns:max-content 1fr 1fr;border:1px solid #000;font-size:11px;min-height:27mm;">
       <div style="padding:3px 6px;border-right:1px solid #000;">
         <p style="font-weight:bold;text-decoration:underline;margin:0 0 1px 0;">Our Bank Details :</p>
@@ -349,9 +352,6 @@ function buildTotalsHTML(data, totals) {
     <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:12px;">
       Amount In Words : ${numberToWords(totals.grandTotal)}
     </div>
-    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:11px;font-weight:bold;">
-      MSME No. : ${seller.msme}
-    </div>
   `;
 }
 
@@ -364,16 +364,18 @@ function paginateItemsDOM(data, totals, items) {
   measureDiv.style.top = '-9999px';
   measureDiv.style.left = '-9999px';
   measureDiv.innerHTML = `
-    <div class="preview-page" style="width:210mm;height:297mm;">
-      <div class="preview-body" id="measureBody" style="position:absolute;top:80mm;bottom:50mm;left:8mm;right:8mm;display:flex;flex-direction:column;">
+    <div class="preview-page" style="width:210mm;height:297mm;display:flex;flex-direction:column;padding:25.4mm;box-sizing:border-box;">
+      <div class="preview-header" style="flex-shrink:0;">${buildPageHeaderHTML(data, 'Original')}</div>
+      <div class="preview-body" id="measureBody" style="flex-grow:1;display:flex;flex-direction:column;overflow:hidden;">
         <table class="print-items-table" id="measureTable" style="width:100%;border-collapse:collapse;font-size:12px;font-family:'Times New Roman',Times,serif;">
           <thead>${buildColumnHeadersHTML()}</thead>
           <tbody id="measureTbody"></tbody>
         </table>
-        <div id="measureTotals" class="print-totals" style="font-family:'Times New Roman',Times,serif;display:none;">
+        <div id="measureTotals" class="print-totals" style="font-family:'Times New Roman',Times,serif;display:none;flex-shrink:0;">
           ${buildTotalsHTML(data, totals)}
         </div>
       </div>
+      <div class="preview-footer" style="flex-shrink:0;">${buildPageFooterHTML(data, 1, 1)}</div>
     </div>
   `;
   document.body.appendChild(measureDiv);
