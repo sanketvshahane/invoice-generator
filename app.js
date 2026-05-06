@@ -211,31 +211,31 @@ function getFormData() {
 function buildPageHeaderHTML(data, copyName) {
   const { seller, irn, invoice, buyer } = data;
   return `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;font-size:9px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;font-size:11px;">
       <span>${copyName}</span>
       <span>(U/s 31 of CGST Act & SGST Act R.W. Sec. 20 of IGST Act)</span>
-      <span style="border:1px solid #000;padding:2px 8px;font-weight:bold;font-size:11px;">GST Tax Invoice</span>
+      <span style="border:1px solid #000;padding:2px 8px;font-weight:bold;font-size:13px;">GST Tax Invoice</span>
     </div>
     <div style="display:grid;grid-template-columns:1fr auto;border:1px solid #000;">
       <div>
-        <div style="padding:3px 6px;font-size:9px;border-bottom:1px solid #000;">
+        <div style="padding:3px 6px;font-size:11px;border-bottom:1px solid #000;">
           <div><strong>Eway Bill No.</strong> ${irn.ackNo}</div>
           <div><strong>Eway Bill Date</strong> ${irn.ackDate}</div>
         </div>
         <div style="text-align:center;padding:5px 6px;">
-          <div style="font-size:18px;font-weight:bold;letter-spacing:1px;">${seller.name}</div>
-          <div style="font-size:10px;font-weight:bold;margin-bottom:2px;">Electrical Engineering Projects and Services</div>
-          <div style="font-size:9px;">${seller.address}</div>
-          <div style="font-size:9px;">Mob: ${seller.phone}${seller.email ? ' | Email: ' + seller.email : ''}${seller.website ? ' | Website: ' + seller.website : ''}</div>
+          <div style="font-size:20px;font-weight:bold;letter-spacing:1px;">${seller.name}</div>
+          <div style="font-size:12px;font-weight:bold;margin-bottom:2px;">Electrical Engineering Projects and Services</div>
+          <div style="font-size:11px;">${seller.address}</div>
+          <div style="font-size:11px;">Mob: ${seller.phone}${seller.email ? ' | Email: ' + seller.email : ''}${seller.website ? ' | Website: ' + seller.website : ''}</div>
         </div>
       </div>
       <div style="border-left:1px solid #000;display:flex;align-items:center;justify-content:center;padding:6px;">
         ${qrCodeDataUrl
           ? `<img src="${qrCodeDataUrl}" style="width:72px;height:72px;" alt="QR">`
-          : `<div style="width:68px;height:68px;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:7px;color:#999;">QR</div>`}
+          : `<div style="width:68px;height:68px;border:1px solid #999;display:flex;align-items:center;justify-content:center;font-size:9px;color:#999;">QR</div>`}
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:9px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:11px;">
       <div style="padding:3px 6px;">
         <div>GSTIN : ${seller.gstin} &nbsp; W.E.F. 04/03/2026</div>
         <div>Invoice No. : ${invoice.no} &nbsp;&nbsp; Date : ${formatDate(invoice.date)}</div>
@@ -250,7 +250,7 @@ function buildPageHeaderHTML(data, copyName) {
         <div>Kind Attn : ${invoice.kindAttn}</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:9px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:11px;">
       <div style="padding:3px 6px;">
         <div style="text-decoration:underline;font-weight:bold;">Buyer & Consignee:</div>
         <div><strong>${buyer.name}</strong></div>
@@ -270,7 +270,7 @@ function buildPageHeaderHTML(data, copyName) {
 function buildPageFooterHTML(data, pageNum, totalPages) {
   const { seller, bank } = data;
   return `
-    <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;border:1px solid #000;font-size:9px;min-height:22mm;">
+    <div style="display:grid;grid-template-columns:max-content 1fr 1fr;border:1px solid #000;font-size:11px;min-height:27mm;">
       <div style="padding:3px 6px;border-right:1px solid #000;">
         <p style="font-weight:bold;text-decoration:underline;margin:0 0 1px 0;">Our Bank Details :</p>
         <p style="margin:0;">Bank Name : ${bank.name}</p>
@@ -287,15 +287,15 @@ function buildPageFooterHTML(data, pageNum, totalPages) {
         <span style="margin-bottom:4px;align-self:flex-end;text-align:center;width:100%;">Authorised Signatory</span>
       </div>
     </div>
-    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:7px;color:#333;line-height:1.25;display:flex;gap:6px;align-items:flex-end;">
+    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:9px;color:#333;line-height:1.25;display:flex;gap:6px;align-items:flex-end;">
       <span style="flex:1;">I / we certify that our registration certificate under the GST Act, 2017 is in force on the date on which the supply of goods specified in this Tax Invoice is made by me/us & the transaction of supply covered by this Tax Invoice has been effected by me/us & it shall be accounted for in the turnover of supplies while filing of returns & the due tax if any payable on the supplies has been paid or shall be paid & further certified that the particulars given above are true and correct & the amount indicated represents the prices actually charged and that there is no flow additional consideration directly or indirectly from the buyer. Interest @ 18% p.a. charged on all outstanding more than one month after invoice has been rendered.</span>
-      <span style="font-weight:bold;font-size:8px;white-space:nowrap;">Page ${pageNum} of ${totalPages}</span>
+      <span style="font-weight:bold;font-size:10px;white-space:nowrap;">Page ${pageNum} of ${totalPages}</span>
     </div>
   `;
 }
 
 function buildColumnHeadersHTML() {
-  const css = 'border:1px solid #000;padding:3px;background:#f5f5f5;font-weight:bold;font-size:9px;';
+  const css = 'border:1px solid #000;padding:3px;background:#f5f5f5;font-weight:bold;font-size:11px;';
   return `
     <tr>
       <th style="${css}width:3%;">Sn.</th>
@@ -333,23 +333,23 @@ function buildItemRowsHTML(items, startIdx) {
 function buildTotalsHTML(data, totals) {
   const { seller } = data;
   const taxRows = totals.taxes.map(t =>
-    `<div style="display:flex;justify-content:flex-end;gap:20px;padding:1px 6px;font-size:10px;"><span>${t.label} on Amt : ${formatCurrency(t.on)}</span><span>${formatCurrency(t.amount)}</span></div>`
+    `<div style="display:flex;justify-content:flex-end;gap:20px;padding:1px 6px;font-size:12px;"><span>${t.label} on Amt : ${formatCurrency(t.on)}</span><span>${formatCurrency(t.amount)}</span></div>`
   ).join('');
 
   return `
-    <div style="border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;padding:3px 6px;display:flex;justify-content:space-between;font-size:11px;font-weight:bold;">
+    <div style="border-left:1px solid #000;border-right:1px solid #000;border-bottom:1px solid #000;padding:3px 6px;display:flex;justify-content:space-between;font-size:13px;font-weight:bold;">
       <span>Sub Total</span><span>${formatCurrency(totals.subTotal)}</span>
     </div>
     <div style="border-left:1px solid #000;border-right:1px solid #000;">
       ${taxRows}
     </div>
-    <div style="border:1px solid #000;border-top:2px solid #000;padding:4px 6px;display:flex;justify-content:space-between;font-size:12px;font-weight:bold;">
+    <div style="border:1px solid #000;border-top:2px solid #000;padding:4px 6px;display:flex;justify-content:space-between;font-size:14px;font-weight:bold;">
       <span>Grand Total</span><span>${formatCurrency(totals.grandTotal)}</span>
     </div>
-    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:10px;">
+    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:12px;">
       Amount In Words : ${numberToWords(totals.grandTotal)}
     </div>
-    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:9px;font-weight:bold;">
+    <div style="border:1px solid #000;border-top:none;padding:3px 6px;font-size:11px;font-weight:bold;">
       MSME No. : ${seller.msme}
     </div>
   `;
@@ -365,8 +365,8 @@ function paginateItemsDOM(data, totals, items) {
   measureDiv.style.left = '-9999px';
   measureDiv.innerHTML = `
     <div class="preview-page" style="width:210mm;height:297mm;">
-      <div class="preview-body" id="measureBody" style="position:absolute;top:66mm;bottom:45mm;left:8mm;right:8mm;display:flex;flex-direction:column;">
-        <table class="print-items-table" id="measureTable" style="width:100%;border-collapse:collapse;font-size:10px;font-family:'Times New Roman',Times,serif;">
+      <div class="preview-body" id="measureBody" style="position:absolute;top:80mm;bottom:50mm;left:8mm;right:8mm;display:flex;flex-direction:column;">
+        <table class="print-items-table" id="measureTable" style="width:100%;border-collapse:collapse;font-size:12px;font-family:'Times New Roman',Times,serif;">
           <thead>${buildColumnHeadersHTML()}</thead>
           <tbody id="measureTbody"></tbody>
         </table>
@@ -474,7 +474,7 @@ function buildPagedInvoiceHTML(data, totals) {
         <div class="preview-page">
           <div class="preview-header">${headerHTML}</div>
           <div class="preview-body">
-            <table class="print-items-table" style="width:100%;border-collapse:collapse;font-size:10px;font-family:'Times New Roman',Times,serif;flex-grow:1;">
+            <table class="print-items-table" style="width:100%;border-collapse:collapse;font-size:12px;font-family:'Times New Roman',Times,serif;flex-grow:1;">
               <thead>${colHeaders}</thead>
               <tbody>
                 ${itemRows}
