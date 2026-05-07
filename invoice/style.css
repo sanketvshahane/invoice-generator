@@ -1,0 +1,592 @@
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f0f2f5;
+  color: #1a1a1a;
+  font-size: 16px;
+}
+
+/* ===== AUTH SCREEN ===== */
+.auth-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #f0f2f5;
+}
+
+.auth-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  text-align: center;
+  width: 320px;
+}
+
+.auth-box h2 {
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.auth-box p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 1.05rem;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 1.15rem;
+  margin-bottom: 12px;
+}
+
+.auth-box button {
+  width: 100%;
+  padding: 10px;
+  background: #2c3e50;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-box button:hover {
+  background: #34495e;
+}
+
+.auth-error {
+  color: #e74c3c;
+  font-size: 1rem;
+  margin-top: 10px;
+  margin-bottom: 0 !important;
+}
+
+/* ===== APP LAYOUT ===== */
+.app-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.form-panel {
+  overflow-y: auto;
+  padding: 20px;
+  background: #fff;
+  width: 50%;
+  min-width: 300px;
+  max-width: 80%;
+  flex-shrink: 0;
+}
+
+.resize-handle {
+  width: 5px;
+  cursor: col-resize;
+  background: #ddd;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.resize-handle:hover,
+.resize-handle.active {
+  background: #3498db;
+}
+
+.form-panel h1 {
+  font-size: 1.45rem;
+  margin-bottom: 16px;
+  color: #2c3e50;
+}
+
+.preview-panel {
+  overflow-y: auto;
+  padding: 20px;
+  background: #e8e8e8;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Plain stacking container for the paginated preview pages */
+.invoice-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: transparent;
+  width: auto;
+  height: max-content;
+  min-height: min-content;
+  padding: 0;
+  box-shadow: none;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #000;
+  flex-shrink: 0;
+}
+
+/* ===== WYSIWYG A4 PAGE (used for both screen preview and print) ===== */
+.preview-page {
+  width: 210mm;
+  height: 297mm;
+  background: #fff;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  overflow: hidden;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #000;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 25.4mm;
+  box-sizing: border-box;
+}
+
+.preview-page .preview-header {
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.preview-page .preview-footer {
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.preview-page .preview-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.preview-page .print-items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.preview-page .print-cell {
+  border: 1px solid #000;
+  padding: 3px 4px;
+  vertical-align: top;
+}
+
+/* ===== FORM STYLES ===== */
+details {
+  margin-bottom: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+summary {
+  padding: 10px 14px;
+  background: #f8f9fa;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.form-grid label:has(textarea),
+.form-grid label:has(select) {
+  grid-column: 1 / -1;
+}
+
+.form-grid input, .form-grid textarea, .form-grid select {
+  margin-top: 3px;
+  padding: 6px 8px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.form-grid input[readonly], .form-grid textarea[readonly] {
+  background: #f0f0f0;
+  color: #555;
+  cursor: not-allowed;
+  border-color: #e0e0e0;
+}
+
+.form-grid textarea { resize: vertical; }
+
+/* Line Items Table */
+.line-items-container { padding: 12px 14px; overflow-x: auto; }
+.line-items-table { width: max-content; min-width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.line-items-table th { background: #f0f0f0; padding: 6px 4px; text-align: left; font-weight: 600; white-space: nowrap; }
+.line-items-table td { padding: 4px; white-space: nowrap; }
+.line-items-table input { padding: 4px; border: 1px solid #d0d0d0; border-radius: 3px; font-size: 0.9rem; }
+.line-items-table td:nth-child(2) input { min-width: 150px; }
+.line-items-table .btn-remove { background: #e74c3c; color: #fff; border: none; border-radius: 3px; padding: 4px 8px; cursor: pointer; font-size: 0.85rem; white-space: nowrap; }
+
+/* Buttons */
+.btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600; }
+.btn-add { background: #27ae60; color: #fff; margin-top: 8px; padding: 6px 14px; font-size: 0.95rem; }
+.btn-preview { background: #3498db; color: #fff; }
+.btn-print { background: #2c3e50; color: #fff; }
+.form-actions { display: flex; gap: 10px; margin-top: 16px; padding: 0 14px; }
+
+/* ===== INVOICE PREVIEW STYLES ===== */
+
+/* Outer wrapper — single continuous border for the entire invoice body */
+.inv-outer {
+  border: 1px solid #000;
+  overflow: hidden;
+}
+
+.inv-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.inv-title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 15px;
+  border: 1px solid #000;
+  padding: 4px 12px;
+  display: inline-block;
+}
+
+.inv-top-block {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-bottom: 1px solid #000;
+}
+
+.inv-top-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.inv-irn-left {
+  padding: 6px 8px;
+  font-size: 11px;
+  border-bottom: 1px solid #000;
+}
+
+.inv-irn-left div {
+  margin: 3px 0;
+}
+
+.irn-text {
+  font-size: 9.5px;
+  word-break: break-all;
+}
+
+.inv-company-inner {
+  text-align: center;
+  padding: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.inv-company-inner h2 {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 6px 0;
+  letter-spacing: 1px;
+}
+
+.inv-company-inner p {
+  font-size: 12px;
+  margin: 3px 0;
+}
+
+.inv-top-right {
+  border-left: 1px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.qr-placeholder {
+  width: 80px;
+  height: 80px;
+  border: 1px solid #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #999;
+  background: #fafafa;
+}
+
+.qr-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+
+.inv-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #000;
+}
+
+.inv-details-grid .left, .inv-details-grid .right {
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.inv-details-grid .right {
+  border-left: 1px solid #000;
+}
+
+.inv-details-grid .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+
+.inv-details-grid .row span:first-child {
+  font-weight: bold;
+}
+
+.inv-details-grid .row.gstin-row {
+  border-bottom: 1px solid #000;
+  padding-bottom: 5px;
+  margin-bottom: 4px;
+}
+
+.inv-buyer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #000;
+}
+
+.inv-buyer .left {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.inv-buyer .right {
+  border-left: 1px solid #000;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.inv-buyer .right .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+
+.inv-buyer .right .row span:first-child {
+  font-weight: bold;
+}
+
+.inv-buyer h4 {
+  font-size: 12px;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-bottom: 4px;
+}
+
+/* Invoice Table */
+.inv-table {
+  width: calc(100% + 2px);
+  margin-left: -1px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.inv-table th, .inv-table td {
+  border: 1px solid #000;
+  padding: 5px 6px;
+  text-align: center;
+}
+
+.inv-table th {
+  background: #f5f5f5;
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.inv-table td.desc {
+  text-align: left;
+  width: 40%;
+}
+
+.inv-table td.amount {
+  text-align: right;
+}
+
+.inv-table .spacer-row {
+  display: none;
+}
+
+/* MSME row */
+.inv-msme {
+  padding: 5px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  border-bottom: 1px solid #000;
+}
+
+/* Totals */
+.inv-totals {
+  font-size: 12px;
+  border-bottom: 1px solid #000;
+}
+
+.inv-totals .row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 30px;
+  padding: 4px 6px;
+}
+
+.inv-totals .row.sub {
+  font-weight: bold;
+  font-size: 13px;
+  border-bottom: 1px solid #000;
+  padding: 5px 6px;
+}
+
+.inv-totals .row.grand {
+  font-weight: bold;
+  font-size: 14px;
+  border-top: 2px solid #000;
+  padding: 6px 6px;
+}
+
+.inv-amount-words {
+  padding: 5px 6px;
+  font-size: 12px;
+  border-bottom: 1px solid #000;
+}
+
+.inv-issued {
+  padding: 5px 6px;
+  font-size: 11px;
+  border-bottom: 1px solid #000;
+}
+
+.inv-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-size: 11px;
+  border-bottom: 1px solid #000;
+}
+
+.inv-footer .left {
+  padding: 6px 8px;
+  border-right: 1px solid #000;
+}
+
+.inv-footer .right {
+  padding: 6px 8px;
+  text-align: right;
+}
+
+.inv-footer .right p {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.inv-footer p { margin: 3px 0; }
+
+.inv-signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  font-size: 11px;
+  text-align: center;
+  border-bottom: 1px solid #000;
+}
+
+.inv-signatures > div {
+  padding: 24px 8px 6px;
+  border-right: 1px solid #000;
+}
+
+.inv-signatures > div:last-child { border-right: none; }
+
+.inv-disclaimer {
+  padding: 6px 8px;
+  font-size: 9.5px;
+  color: #333;
+}
+
+/* ===== PRINT STYLES ===== */
+/* Each .preview-page is already sized as A4 with header/footer baked in,
+   so print just needs to hide the chrome and force a sheet break per page. */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html, body { margin: 0; padding: 0; background: #fff; }
+
+  .auth-screen, .app-container { display: none !important; }
+
+  .print-only {
+    display: block !important;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12px;
+    color: #000;
+  }
+
+  .print-only .preview-page {
+    width: 210mm;
+    height: 297mm;
+    box-shadow: none !important;
+    margin: 0 !important;
+    page-break-after: always;
+    page-break-inside: avoid;
+    break-after: page;
+    break-inside: avoid;
+  }
+
+  .print-only .preview-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}
+
+/* Hide print area on screen */
+.print-only { display: none; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .app-container {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .preview-panel { display: none; }
+  .form-panel { border-right: none; }
+}
