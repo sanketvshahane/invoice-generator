@@ -129,6 +129,7 @@ body {
   box-shadow: none;
   font-family: 'Times New Roman', Times, serif;
   font-size: 12px;
+  line-height: 1.5;
   color: #000;
   flex-shrink: 0;
 }
@@ -143,6 +144,7 @@ body {
   overflow: hidden;
   font-family: 'Times New Roman', Times, serif;
   font-size: 12px;
+  line-height: 1.5;
   color: #000;
   flex-shrink: 0;
   display: flex;
@@ -262,7 +264,7 @@ summary {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   font-size: 11px;
 }
 
@@ -271,7 +273,7 @@ summary {
   font-weight: bold;
   font-size: 15px;
   border: 1px solid #000;
-  padding: 2px 10px;
+  padding: 4px 12px;
   display: inline-block;
 }
 
@@ -287,13 +289,13 @@ summary {
 }
 
 .inv-irn-left {
-  padding: 4px 6px;
+  padding: 6px 8px;
   font-size: 11px;
   border-bottom: 1px solid #000;
 }
 
 .inv-irn-left div {
-  margin: 1px 0;
+  margin: 3px 0;
 }
 
 .irn-text {
@@ -303,7 +305,7 @@ summary {
 
 .inv-company-inner {
   text-align: center;
-  padding: 6px;
+  padding: 8px;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -313,13 +315,13 @@ summary {
 .inv-company-inner h2 {
   font-size: 22px;
   font-weight: bold;
-  margin: 4px 0;
+  margin: 6px 0;
   letter-spacing: 1px;
 }
 
 .inv-company-inner p {
   font-size: 12px;
-  margin: 1px 0;
+  margin: 3px 0;
 }
 
 .inv-top-right {
@@ -327,7 +329,7 @@ summary {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  padding: 8px;
 }
 
 .qr-placeholder {
@@ -357,7 +359,7 @@ summary {
 
 .inv-details-grid .left, .inv-details-grid .right {
   font-size: 12px;
-  padding: 4px 6px;
+  padding: 6px 8px;
 }
 
 .inv-details-grid .right {
@@ -367,7 +369,7 @@ summary {
 .inv-details-grid .row {
   display: flex;
   justify-content: space-between;
-  padding: 1px 0;
+  padding: 3px 0;
 }
 
 .inv-details-grid .row span:first-child {
@@ -376,8 +378,8 @@ summary {
 
 .inv-details-grid .row.gstin-row {
   border-bottom: 1px solid #000;
-  padding-bottom: 3px;
-  margin-bottom: 2px;
+  padding-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .inv-buyer {
@@ -387,20 +389,20 @@ summary {
 }
 
 .inv-buyer .left {
-  padding: 4px 6px;
+  padding: 6px 8px;
   font-size: 12px;
 }
 
 .inv-buyer .right {
   border-left: 1px solid #000;
   font-size: 12px;
-  padding: 4px 6px;
+  padding: 6px 8px;
 }
 
 .inv-buyer .right .row {
   display: flex;
   justify-content: space-between;
-  padding: 1px 0;
+  padding: 3px 0;
 }
 
 .inv-buyer .right .row span:first-child {
@@ -411,7 +413,7 @@ summary {
   font-size: 12px;
   font-weight: bold;
   text-decoration: underline;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 /* Invoice Table */
@@ -424,7 +426,7 @@ summary {
 
 .inv-table th, .inv-table td {
   border: 1px solid #000;
-  padding: 3px 4px;
+  padding: 5px 6px;
   text-align: center;
 }
 
@@ -449,7 +451,7 @@ summary {
 
 /* MSME row */
 .inv-msme {
-  padding: 3px 6px;
+  padding: 5px 6px;
   font-size: 12px;
   font-weight: bold;
   border-bottom: 1px solid #000;
@@ -465,31 +467,31 @@ summary {
   display: flex;
   justify-content: flex-end;
   gap: 30px;
-  padding: 2px 6px;
+  padding: 4px 6px;
 }
 
 .inv-totals .row.sub {
   font-weight: bold;
   font-size: 13px;
   border-bottom: 1px solid #000;
-  padding: 3px 6px;
+  padding: 5px 6px;
 }
 
 .inv-totals .row.grand {
   font-weight: bold;
   font-size: 14px;
   border-top: 2px solid #000;
-  padding: 4px 6px;
+  padding: 6px 6px;
 }
 
 .inv-amount-words {
-  padding: 3px 6px;
+  padding: 5px 6px;
   font-size: 12px;
   border-bottom: 1px solid #000;
 }
 
 .inv-issued {
-  padding: 3px 6px;
+  padding: 5px 6px;
   font-size: 11px;
   border-bottom: 1px solid #000;
 }
@@ -502,12 +504,12 @@ summary {
 }
 
 .inv-footer .left {
-  padding: 4px 6px;
+  padding: 6px 8px;
   border-right: 1px solid #000;
 }
 
 .inv-footer .right {
-  padding: 4px 6px;
+  padding: 6px 8px;
   text-align: right;
 }
 
@@ -516,7 +518,7 @@ summary {
   text-decoration: underline;
 }
 
-.inv-footer p { margin: 1px 0; }
+.inv-footer p { margin: 3px 0; }
 
 .inv-signatures {
   display: grid;
@@ -527,14 +529,14 @@ summary {
 }
 
 .inv-signatures > div {
-  padding: 20px 6px 4px;
+  padding: 24px 8px 6px;
   border-right: 1px solid #000;
 }
 
 .inv-signatures > div:last-child { border-right: none; }
 
 .inv-disclaimer {
-  padding: 4px 6px;
+  padding: 6px 8px;
   font-size: 9.5px;
   color: #333;
 }
