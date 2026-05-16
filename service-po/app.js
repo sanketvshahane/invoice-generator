@@ -122,7 +122,15 @@ function getFormData() {
       transport: g('transport')
     },
     buyer: {
-      name: g('buyerName'), address: g('buyerAddress'), phone: g('buyerPhone'), email: g('buyerEmail')
+      name: g('buyerName'), address: g('buyerAddress'), phone: g('buyerPhone'), email: g('buyerEmail'), gstin: g('buyerGstin')
+    },
+    notes: {
+      note1: g('note1'), note2: g('note2'), note3: g('note3')
+    },
+    tc: {
+      taxes: g('tcTaxes'), supplyInst: g('tcSupplyInst'), delivery: g('tcDelivery'),
+      packing: g('tcPacking'), warranty: g('tcWarranty'),
+      noteA: g('tcNoteA'), noteB: g('tcNoteB'), noteC: g('tcNoteC')
     }
   };
 }
@@ -136,23 +144,33 @@ function buildPageHeaderHTML(data) {
       PURCHASE ORDER
     </div>
     
-    <div style="text-align:center;margin-bottom:15px;">
-      <div style="font-size:18px;font-weight:bold;">${seller.name}</div>
-      <div style="font-size:11px;">Address: ${seller.address}</div>
+    <div style="text-align:center;border:1px solid #000;padding:5px 6px;">
+      <div style="font-size:20px;font-weight:bold;letter-spacing:1px;">${seller.name}</div>
+      <div style="font-size:11px;">${seller.address}</div>
       <div style="font-size:11px;">Mob: ${seller.phone} | Email: ${seller.email} | Website: ${seller.website}</div>
-      <div style="font-size:11px;"><strong>GSTIN:</strong> ${seller.gstin} | <strong>MSME No:</strong> ${seller.msme}</div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;font-size:12px;">
-      <div style="padding:6px 8px;">
+    <div style="display:flex;justify-content:space-between;border:1px solid #000;border-top:none;padding:3px 6px;font-size:11px;">
+      <span><strong>GSTIN:</strong> ${seller.gstin}</span>
+      <span><strong>W.E.F:</strong> 04/03/2026</span>
+      <span><strong>State Code:</strong> 27 (Maharashtra)</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;border:1px solid #000;border-top:none;padding:3px 6px;font-size:11px;">
+      <span><strong>PAN:</strong> BGYPS3448H</span>
+      <span><strong>MSME No:</strong> ${seller.msme}</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #000;border-top:none;font-size:11px;">
+      <div style="padding:3px 6px;">
         <div style="text-decoration:underline;font-weight:bold;margin-bottom:4px;">TO:</div>
-        <div style="font-size:14px;font-weight:bold;margin-bottom:4px;">${buyer.name}</div>
-        <div style="white-space: pre-wrap;">${buyer.address}</div>
-        <div style="margin-top:4px;">${buyer.phone ? 'Phone: ' + buyer.phone : ''}</div>
+        <div style="font-size:13px;font-weight:bold;margin-bottom:2px;">${buyer.name}</div>
+        <div style="white-space: pre-wrap;margin-bottom:2px;">${buyer.address}</div>
+        <div>${buyer.phone ? 'Phone: ' + buyer.phone : ''}</div>
         <div>${buyer.email ? 'Email: ' + buyer.email : ''}</div>
+        <div style="margin-top:4px;"><strong>GSTIN:</strong> ${buyer.gstin || ''}</div>
       </div>
-      <div style="padding:6px 8px;border-left:1px solid #000;">
-        <div style="display:grid;grid-template-columns:100px 1fr;gap:4px;margin-bottom:4px;">
+      <div style="padding:3px 6px;border-left:1px solid #000;">
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:2px;">
            <strong>P.O. No:</strong> <span>${po.no}</span>
            <strong>Date:</strong> <span>${formatDate(po.date)}</span>
            <strong>Vendor Code:</strong> <span>${po.vendorCode}</span>
@@ -199,22 +217,25 @@ function buildPageFooterHTML(data, pageNum, totalPages, isLastPage, totals) {
             Amount in words: Rupees ${numberToWords(roundedTotal)}
           </div>
        </div>
-       <div style="border:1px solid #000;border-top:none;padding:6px 8px;font-size:11px;">
+        <div style="border:1px solid #000;border-top:none;padding:6px 8px;font-size:11px;">
          <div style="font-weight:bold;text-decoration:underline;margin-bottom:4px;">Terms & Conditions :</div>
          <table style="width:100%;font-size:11px;">
-           <tr><td style="width:20px;">1</td><td style="width:150px;">Taxes</td><td>18% Extra As Applicable</td></tr>
+           <tr><td style="width:20px;">1</td><td style="width:150px;">Taxes</td><td>${data.tc.taxes || '18% Extra As Applicable'}</td></tr>
            <tr><td>2</td><td>Payment</td><td>${data.po.payTerms || 'As Per Project PO Term'}</td></tr>
-           <tr><td>3</td><td>Supply & Installation</td><td>As Per Project PO</td></tr>
-           <tr><td>4</td><td>Delivery</td><td>AS PER TENDER TIME LINE GIVEN.</td></tr>
-           <tr><td>5</td><td>Packing-Forwarding</td><td>ALL INCLUDED</td></tr>
+           <tr><td>3</td><td>Supply & Installation</td><td>${data.tc.supplyInst || 'As Per Project PO'}</td></tr>
+           <tr><td>4</td><td>Delivery</td><td>${data.tc.delivery || 'AS PER TENDER TIME LINE GIVEN.'}</td></tr>
+           <tr><td>5</td><td>Packing-Forwarding</td><td>${data.tc.packing || 'ALL INCLUDED'}</td></tr>
            <tr><td>6</td><td>Transport</td><td>${data.po.transport || 'FREE DOOR DELIVERY @ SITE'}</td></tr>
-           <tr><td>7</td><td>Warranty</td><td>12 MONTHS AS PER STANDARD WARRANTY GIVEN BY OEM</td></tr>
+           <tr><td>7</td><td>Warranty</td><td>${data.tc.warranty || '12 MONTHS AS PER STANDARD WARRANTY GIVEN BY OEM'}</td></tr>
          </table>
          <div style="margin-top:8px;font-size:10px;">
-           <strong>Note A:</strong> SUPPLY & INSTALLATION - 85% OF CONTRACT VALUE SHALL BE AGAINST RUNNING BILLS AGAINST ACTUAL PROGRESS OF WORK.<br>
-           <strong>Note B:</strong> BALANCE 10% SHALL BE PAID AGAINST FINAL BILL AFTER HANDING OVER.<br>
-           <strong>Note C:</strong> 5% RETENTION AMOUNT FOR 12 MONTHS WARRANTY PERIOD WILL BE PAID AFTER DEFECT LIABILITY PERIOD.
+           ${data.tc.noteA ? `<strong>Note A:</strong> ${data.tc.noteA}<br>` : ''}
+           ${data.tc.noteB ? `<strong>Note B:</strong> ${data.tc.noteB}<br>` : ''}
+           ${data.tc.noteC ? `<strong>Note C:</strong> ${data.tc.noteC}` : ''}
          </div>
+         ${data.notes && data.notes.note1 ? `<div style="margin-top:4px;font-size:11px;"><strong>Note 1:</strong> ${data.notes.note1}</div>` : ''}
+         ${data.notes && data.notes.note2 ? `<div style="margin-top:4px;font-size:11px;"><strong>Note 2:</strong> ${data.notes.note2}</div>` : ''}
+         ${data.notes && data.notes.note3 ? `<div style="margin-top:4px;font-size:11px;"><strong>Note 3:</strong> ${data.notes.note3}</div>` : ''}
        </div>
      `;
   }

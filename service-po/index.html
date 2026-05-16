@@ -45,6 +45,7 @@
           <label>Address <textarea id="buyerAddress" rows="2"></textarea></label>
           <label>Phone Number <input type="text" id="buyerPhone" value=""></label>
           <label>Email(s) <input type="text" id="buyerEmail" value=""></label>
+          <label>GSTIN <input type="text" id="buyerGstin" value=""></label>
         </div>
       </details>
 
@@ -56,8 +57,8 @@
           <label>Vendor Code <input type="text" id="vendorCode"></label>
           <label>Kind Attn. <input type="text" id="kindAttn"></label>
           <label>Ref. No. <input type="text" id="refNo"></label>
-          <label>Pay. Terms <input type="text" id="payTerms"></label>
-          <label>Transport <input type="text" id="transport"></label>
+          <label>Pay. Terms <input type="text" id="payTerms" value="As Per Project PO Term"></label>
+          <label>Transport <input type="text" id="transport" value="FREE DOOR DELIVERY @ SITE"></label>
         </div>
       </details>
 
@@ -80,6 +81,23 @@
             </tbody>
           </table>
           <button type="button" class="btn btn-add" onclick="addLineItem()">+ Add Item</button>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Terms & Conditions Notes</summary>
+        <div class="form-grid">
+          <label>Taxes <input type="text" id="tcTaxes" value="18% Extra As Applicable"></label>
+          <label>Supply & Inst. <input type="text" id="tcSupplyInst" value="As Per Project PO"></label>
+          <label>Delivery <input type="text" id="tcDelivery" value="AS PER TENDER TIME LINE GIVEN."></label>
+          <label>Packing-Fwd <input type="text" id="tcPacking" value="ALL INCLUDED"></label>
+          <label>Warranty <input type="text" id="tcWarranty" value="12 MONTHS AS PER STANDARD WARRANTY GIVEN BY OEM"></label>
+          <label>Note A <textarea id="tcNoteA" rows="2">SUPPLY & INSTALLATION - 85% OF CONTRACT VALUE SHALL BE AGAINST RUNNING BILLS AGAINST ACTUAL PROGRESS OF WORK.</textarea></label>
+          <label>Note B <textarea id="tcNoteB" rows="2">BALANCE 10% SHALL BE PAID AGAINST FINAL BILL AFTER HANDING OVER.</textarea></label>
+          <label>Note C <textarea id="tcNoteC" rows="2">5% RETENTION AMOUNT FOR 12 MONTHS WARRANTY PERIOD WILL BE PAID AFTER DEFECT LIABILITY PERIOD.</textarea></label>
+          <label>Note 1 <input type="text" id="note1" value=""></label>
+          <label>Note 2 <input type="text" id="note2" value=""></label>
+          <label>Note 3 <input type="text" id="note3" value=""></label>
         </div>
       </details>
 
